@@ -1,31 +1,33 @@
 import React, { useState } from "react";
+import { NavLink } from "react-router-dom";
 
-export default function Sidebar({ activeTab, setActiveTab }) {
+export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
 
   const menuGroups = [
     {
       group: "Core Operations",
       items: [
-        { id: "instant-orders", label: "Instant Orders", icon: "⚡", badge: "POS" },
-        { id: "manage-orders", label: "Manage Orders", icon: "📦" },
-        { id: "manage-inventory", label: "Manage Inventory", icon: "📊" },
+        { path: "/instant-orders", label: "Instant Orders", icon: "⚡", badge: "POS" },
+        { path: "/manage-orders", label: "Manage Orders", icon: "📦" },
+        { path: "/manage-inventory", label: "Manage Inventory", icon: "📊" },
+        { path: "/add-product", label: "Add Products", icon: "➕" }, // <-- New Item Added
       ]
     },
     {
       group: "Store Administration",
       items: [
-        { id: "manage-shop", label: "Manage Shop", icon: "🏪" },
-        { id: "manage-staff", label: "Manage Staff", icon: "👥" },
-        { id: "manage-category", label: "Manage Category", icon: "🏷️" },
+        { path: "/manage-shop", label: "Manage Shop", icon: "🏪" },
+        { path: "/manage-staff", label: "Manage Staff", icon: "👥" },
+        { path: "/manage-category", label: "Manage Category", icon: "🏷️" },
       ]
     },
     {
       group: "System & Settings",
       items: [
-        { id: "website-settings", label: "Website Settings", icon: "🌐" },
-        { id: "configurations", label: "Configurations", icon: "⚙️" },
-        { id: "admin-settings", label: "Admin Settings", icon: "🛡️" },
+        { path: "/website-settings", label: "Website Settings", icon: "🌐" },
+        { path: "/configurations", label: "Configurations", icon: "⚙️" },
+        { path: "/admin-settings", label: "Admin Settings", icon: "🛡️" },
       ]
     }
   ];
@@ -58,10 +60,10 @@ export default function Sidebar({ activeTab, setActiveTab }) {
           <div key={idx} className="nav-group">
             {!collapsed && <div className="group-title">{group.group}</div>}
             {group.items.map((item) => (
-              <button
-                key={item.id}
-                className={`nav-item ${activeTab === item.id ? "active" : ""}`}
-                onClick={() => setActiveTab(item.id)}
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
               >
                 <span className="nav-icon">{item.icon}</span>
                 {!collapsed && (
@@ -70,7 +72,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
                     {item.badge && <span className="nav-badge">{item.badge}</span>}
                   </>
                 )}
-              </button>
+              </NavLink>
             ))}
           </div>
         ))}

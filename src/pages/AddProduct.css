@@ -1,0 +1,314 @@
+/* Container & Layout */
+.product-container {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #1e293b;
+}
+
+/* Page Header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.header-subtitle {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+.btn-primary {
+  background-color: #2563eb;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 0.625rem 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+}
+
+/* Toolbar Controls */
+.toolbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.filters-group {
+  display: flex;
+  gap: 0.75rem;
+  flex: 1;
+  max-width: 600px;
+}
+
+.search-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.input-field, .select-field, .textarea-field {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #334155;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input-field.has-icon {
+  padding-left: 2.25rem;
+}
+
+.input-field:focus, .select-field:focus, .textarea-field:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.total-badge {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #dbeafe;
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Table Styles */
+.table-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.loading-state, .empty-state {
+  padding: 3rem;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.875rem;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.data-table th {
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.875rem 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.data-table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.875rem;
+}
+
+.data-table tr:hover {
+  background-color: #f8fafc;
+}
+
+.prod-name {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.prod-sku {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-family: monospace;
+  margin-top: 0.125rem;
+}
+
+.badge-category {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+}
+
+/* Stock Badges */
+.stock-badge {
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.stock-high { background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+.stock-medium { background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+.stock-low { background-color: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
+
+.price-mono { font-family: monospace; color: #475569; }
+.price-bold { font-family: monospace; font-weight: 600; color: #0f172a; }
+.margin-sub { font-size: 0.75rem; color: #059669; font-weight: 500; font-family: sans-serif; }
+.text-right { text-align: right; }
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.btn-icon {
+  background-color: #f1f5f9;
+  border: none;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-icon.edit:hover { background-color: #e0e7ff; color: #4338ca; }
+.btn-icon.delete:hover { background-color: #ffe4e6; color: #be123c; }
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 600px;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.375rem;
+}
+
+.btn-close:hover { background-color: #f1f5f9; color: #475569; }
+
+.modal-form {
+  padding: 1.5rem;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.span-full { grid-column: span 2; }
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.form-group label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.btn-secondary {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.btn-secondary:hover { background-color: #e2e8f0; }
