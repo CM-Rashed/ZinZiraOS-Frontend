@@ -11,7 +11,8 @@ export default function Sidebar() {
         { path: "/instant-orders", label: "Instant Orders", icon: "⚡", badge: "POS" },
         { path: "/manage-orders", label: "Manage Orders", icon: "📦" },
         { path: "/manage-inventory", label: "Manage Inventory", icon: "📊" },
-        { path: "/add-product", label: "Add Products", icon: "➕" }, // <-- New Item Added
+        { path: "/add-product", label: "Add Products", icon: "➕" },
+        { path: "/manage-customer", label: "Manage Customer", icon: "👤" },
       ]
     },
     {
@@ -39,11 +40,15 @@ export default function Sidebar() {
 
   return (
     <aside className={`app-sidebar ${collapsed ? "collapsed" : ""}`}>
-      {/* Sidebar Header / Brand Toggle */}
+      {/* Brand Header */}
       <div className="sidebar-header">
         <div className="brand-logo">
           <div className="logo-icon">Z</div>
-          {!collapsed && <span className="brand-name">Zinzira<span className="accent">OS</span></span>}
+          {!collapsed && (
+            <span className="brand-name">
+              Zinzira<span className="accent">OS</span>
+            </span>
+          )}
         </div>
         <button 
           className="collapse-toggle" 
@@ -54,7 +59,7 @@ export default function Sidebar() {
         </button>
       </div>
 
-      {/* Navigation Sections */}
+      {/* Navigation Links */}
       <nav className="sidebar-nav">
         {menuGroups.map((group, idx) => (
           <div key={idx} className="nav-group">
@@ -78,11 +83,11 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Footer / Session Action */}
+      {/* Footer / Session */}
       <div className="sidebar-footer">
         <button className="logout-btn" onClick={handleLogout}>
           <span className="nav-icon">🚪</span>
-          {!collapsed && <span>Exit Session</span>}
+          {!collapsed && <span className="logout-label">Exit Session</span>}
         </button>
       </div>
     </aside>

@@ -5,7 +5,7 @@ import AppOnboarding from "./components/AppOnboarding";
 import ShopSetup from "./components/ShopSetup";
 import DashboardLayout from "./components/Dashboard";
 
-// Individual Dedicated Page Imports
+// Dedicated Page Imports
 import InstantOrders from "./pages/InstantOrders";
 import Inventory from "./pages/Inventory";
 import ManageOrders from "./pages/ManageOrders";
@@ -16,10 +16,34 @@ import WebsiteSettings from "./pages/WebsiteSettings";
 import Configurations from "./pages/Configurations";
 import AdminSettings from "./pages/AdminSettings";
 import AddProduct from "./pages/AddProduct";
-// import "./App.css";
+import ManageCustomer from "./pages/ManageCustomer";
+import "./App.css";
 
 export default function App() {
   const [stage, setStage] = useState("loading");
+
+  // Prevent copying, text selection, and right-click context menu globally
+  useEffect(() => {
+    const handleCopy = (e) => e.preventDefault();
+    const handleContextMenu = (e) => e.preventDefault();
+    const handleSelectStart = (e) => {
+      // Allow selection inside input fields and textareas so typing works normally
+      const tag = e.target.tagName.toLowerCase();
+      if (tag !== "input" && tag !== "textarea") {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener("copy", handleCopy);
+    document.addEventListener("contextmenu", handleContextMenu);
+    document.addEventListener("selectstart", handleSelectStart);
+
+    return () => {
+      document.removeEventListener("copy", handleCopy);
+      document.removeEventListener("contextmenu", handleContextMenu);
+      document.removeEventListener("selectstart", handleSelectStart);
+    };
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -45,45 +69,61 @@ export default function App() {
     setStage("dashboard");
   };
 
-  if (stage === "loading") return null;
+  if (stage === "loading") {
+    return (
+      <div className="loading-screen">
+        <div className="pulse-loader"></div>
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>
       <div className="app-layout">
+        {/* Background ambient lighting effects */}
+        <div className="ambient-glow glow-primary"></div>
+        <div className="ambient-glow glow-secondary"></div>
+        <div className="app-grid-overlay"></div>
+
         <TitleBar />
-        <div className="content-area">
+
+        <main className="content-area">
           {stage === "app-onboarding" && (
-            <AppOnboarding onComplete={handleAppOnboardingComplete} />
+            <div className="flow-container fade-in">
+              <AppOnboarding onComplete={handleAppOnboardingComplete} />
+            </div>
           )}
 
           {stage === "shop-setup" && (
-            <ShopSetup onComplete={handleShopSetupComplete} />
+            <div className="flow-container fade-in">
+              <ShopSetup onComplete={handleShopSetupComplete} />
+            </div>
           )}
 
           {stage === "dashboard" && (
-            <Routes>
-              {/* Main Dashboard Wrapper with Persistent Sidebar */}
-              <Route path="/" element={<DashboardLayout />}>
-                {/* Default Route Redirects to Instant Orders */}
-                <Route index element={<Navigate to="/instant-orders" replace />} />
-
-                {/* Dedicated Pages Rendered inside DashboardLayout's <Outlet /> */}
-                <Route path="instant-orders" element={<InstantOrders />} />
-                <Route path="manage-inventory" element={<Inventory />} />
-                <Route path="manage-orders" element={<ManageOrders />} />
-                <Route path="manage-shop" element={<ManageShop />} />
-                <Route path="manage-staff" element={<ManageStaff />} />
-                <Route path="manage-category" element={<ManageCategory />} />
-                <Route path="website-settings" element={<WebsiteSettings />} />
-                <Route path="configurations" element={<Configurations />} />
-                <Route path="admin-settings" element={<AdminSettings />} />
-                <Route path="add-product" element={<AddProduct />} />
-                {/* Catch-all redirect to instant orders */}
-                <Route path="*" element={<Navigate to="/instant-orders" replace />} />
-              </Route>
-            </Routes>
+            <div className="dashboard-container fade-in">
+              <Routes>
+                <Route path="/" element={<DashboardLayout />}>
+                  {/* Default entry point changed to manage-shop */}
+                  <Route index element={<Navigate to="/manage-shop" replace />} />
+                  <Route path="manage-shop" element={<ManageShop />} />
+                  <Route path="instant-orders" element={<InstantOrders />} />
+                  <Route path="manage-inventory" element={<Inventory />} />
+                  <Route path="manage-orders" element={<ManageOrders />} />
+                  <Route path="manage-staff" element={<ManageStaff />} />
+                  <Route path="manage-category" element={<ManageCategory />} />
+                  <Route path="website-settings" element={<WebsiteSettings />} />
+                  <Route path="configurations" element={<Configurations />} />
+                  <Route path="admin-settings" element={<AdminSettings />} />
+                  <Route path="add-product" element={<AddProduct />} />
+                  <Route path="manage-customer" element={<ManageCustomer />} />
+                  {/* Fallback route redirecting to manage-shop */}
+                  <Route path="*" element={<Navigate to="/manage-shop" replace />} />
+                </Route>
+              </Routes>
+            </div>
           )}
-        </div>
+        </main>
       </div>
     </BrowserRouter>
   );

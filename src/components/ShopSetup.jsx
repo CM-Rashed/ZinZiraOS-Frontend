@@ -8,7 +8,7 @@ export default function ShopSetup({ onComplete }) {
 
   // Login Form State
   const [loginData, setLoginData] = useState({
-    login: "", // Accepts email or admin_number
+    login: "",
     password: "",
   });
 
@@ -88,7 +88,6 @@ export default function ShopSetup({ onComplete }) {
         throw new Error(data.message || "Invalid credentials.");
       }
 
-      // Store auth session
       localStorage.setItem("authToken", data.token);
       localStorage.setItem("adminData", JSON.stringify(data.admin));
 
@@ -139,7 +138,7 @@ export default function ShopSetup({ onComplete }) {
 
   return (
     <div className="onboarding-card setup-wizard-card">
-      {/* Mode Switcher Toggle */}
+      {/* Mode Switcher Segmented Control */}
       <div className="auth-mode-switch">
         <button
           type="button"
@@ -159,18 +158,25 @@ export default function ShopSetup({ onComplete }) {
             setError(null);
           }}
         >
-          Login Existing Shop
+          Sign In Existing Store
         </button>
       </div>
 
-      {error && <div className="error-banner">{error}</div>}
+      {error && (
+        <div className="error-banner">
+          <svg className="error-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
+          <span>{error}</span>
+        </div>
+      )}
 
       {/* LOGIN FORM MODE */}
       {isLoginMode ? (
         <form onSubmit={handleLoginSubmit} className="wizard-form">
           <div className="step-header">
-            <h3>Access Store Dashboard</h3>
-            <p>Enter your Email or Admin ID and password to log in.</p>
+            <h3 className="step-title">Access Store Dashboard</h3>
+            <p className="step-subtitle">Enter your Email or Admin ID to continue to your workspace.</p>
           </div>
 
           <div className="input-field">
@@ -204,30 +210,30 @@ export default function ShopSetup({ onComplete }) {
           </button>
         </form>
       ) : (
-        /* MULTI-STEP REGISTRATION FORM MODE */
+        /* MULTI-STEP REGISTRATION MODE */
         <>
           <div className="wizard-progress">
             <div className={`progress-step ${currentStep >= 1 ? "active" : ""}`}>
               <div className="step-num">1</div>
-              <span>Admin</span>
+              <span className="step-label">Admin</span>
             </div>
             <div className={`progress-line ${currentStep >= 2 ? "active" : ""}`} />
             <div className={`progress-step ${currentStep >= 2 ? "active" : ""}`}>
               <div className="step-num">2</div>
-              <span>Store</span>
+              <span className="step-label">Store</span>
             </div>
             <div className={`progress-line ${currentStep === 3 ? "active" : ""}`} />
             <div className={`progress-step ${currentStep === 3 ? "active" : ""}`}>
               <div className="step-num">3</div>
-              <span>Confirm</span>
+              <span className="step-label">Confirm</span>
             </div>
           </div>
 
           {currentStep === 1 && (
             <form onSubmit={handleNext} className="wizard-form">
               <div className="step-header">
-                <h3>Admin Account Setup</h3>
-                <p>Create primary credentials for system authorization.</p>
+                <h3 className="step-title">Admin Credentials</h3>
+                <p className="step-subtitle">Set up primary credentials to secure your store.</p>
               </div>
 
               <div className="input-field">
@@ -257,7 +263,7 @@ export default function ShopSetup({ onComplete }) {
                   />
                 </div>
                 <div className="input-field">
-                  <label>Email (Optional)</label>
+                  <label>Email <span className="label-optional">(Optional)</span></label>
                   <input
                     type="email"
                     name="email"
@@ -305,8 +311,8 @@ export default function ShopSetup({ onComplete }) {
           {currentStep === 2 && (
             <form onSubmit={handleNext} className="wizard-form">
               <div className="step-header">
-                <h3>Store Specifications</h3>
-                <p>Provide details regarding your physical outlet.</p>
+                <h3 className="step-title">Store Specifications</h3>
+                <p className="step-subtitle">Provide details regarding your physical outlet.</p>
               </div>
 
               <div className="input-field">
@@ -340,7 +346,7 @@ export default function ShopSetup({ onComplete }) {
                   <label>Business Category</label>
                   <select
                     name="shop_type"
-                    className="styled-input"
+                    className="styled-input styled-select"
                     value={formData.shop_type}
                     onChange={handleRegisterChange}
                     required
@@ -383,29 +389,29 @@ export default function ShopSetup({ onComplete }) {
           {currentStep === 3 && (
             <div className="wizard-form">
               <div className="step-header">
-                <h3>Confirm Profile</h3>
-                <p>Review information before provisioning your account.</p>
+                <h3 className="step-title">Confirm Profile</h3>
+                <p className="step-subtitle">Review information before provisioning your workplace.</p>
               </div>
 
               <div className="summary-card">
                 <div className="summary-row">
-                  <span className="summary-label">Admin Name:</span>
+                  <span className="summary-label">Admin Name</span>
                   <span className="summary-val">{formData.admin_name}</span>
                 </div>
                 <div className="summary-row">
-                  <span className="summary-label">Admin ID:</span>
+                  <span className="summary-label">Admin ID</span>
                   <span className="summary-val">{formData.admin_number}</span>
                 </div>
                 <div className="summary-row">
-                  <span className="summary-label">Shop Name:</span>
+                  <span className="summary-label">Shop Name</span>
                   <span className="summary-val">{formData.shop_name}</span>
                 </div>
                 <div className="summary-row">
-                  <span className="summary-label">Category:</span>
+                  <span className="summary-label">Category</span>
                   <span className="summary-val badge">{formData.shop_type}</span>
                 </div>
                 <div className="summary-row">
-                  <span className="summary-label">Location:</span>
+                  <span className="summary-label">Location</span>
                   <span className="summary-val">{formData.shop_location}</span>
                 </div>
               </div>
@@ -425,7 +431,7 @@ export default function ShopSetup({ onComplete }) {
                   onClick={handleRegisterSubmit}
                   disabled={loading}
                 >
-                  {loading ? "Initializing Workplace..." : "Launch Platform ✨"}
+                  {loading ? "Initializing..." : "Launch Platform ✨"}
                 </button>
               </div>
             </div>
