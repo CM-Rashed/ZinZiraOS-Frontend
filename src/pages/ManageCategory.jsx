@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "./ManageCategory.css";
+import styles from "./ManageCategory.module.css";
 
 const API_BASE_URL = "http://127.0.0.1:8000/api/admin/categories";
 
@@ -138,46 +138,46 @@ export default function ManageCategory() {
   );
 
   return (
-    <div className="category-container">
+    <div className={styles.categoryContainer}>
       {/* Page Header */}
-      <div className="page-header">
+      <div className={styles.pageHeader}>
         <div>
-          <h2 className="header-title">Manage Categories</h2>
-          <p className="header-subtitle">
+          <h2 className={styles.headerTitle}>Manage Categories</h2>
+          <p className={styles.headerSubtitle}>
             Organize and structure your shop product catalog hierarchy
           </p>
         </div>
-        <button onClick={() => handleOpenModal()} className="btn-primary">
+        <button onClick={() => handleOpenModal()} className={styles.btnPrimary}>
           ➕ Add New Category
         </button>
       </div>
 
       {/* Toolbar */}
-      <div className="toolbar-container">
-        <div className="search-wrapper">
-          <span className="search-icon">🔍</span>
+      <div className={styles.toolbarContainer}>
+        <div className={styles.searchWrapper}>
+          <span className={styles.searchIcon}>🔍</span>
           <input
             type="text"
-            className="input-field has-icon"
+            className={`${styles.inputField} ${styles.hasIcon}`}
             placeholder="Search categories by name or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <div className="total-badge">
+        <div className={styles.totalBadge}>
           Total Categories: <strong>{categories.length}</strong>
         </div>
       </div>
 
       {/* Data Table */}
-      <div className="table-card">
+      <div className={styles.tableCard}>
         {loading ? (
-          <div className="loading-state">Loading categories...</div>
+          <div className={styles.loadingState}>Loading categories...</div>
         ) : filteredCategories.length === 0 ? (
-          <div className="empty-state">No categories found.</div>
+          <div className={styles.emptyState}>No categories found.</div>
         ) : (
-          <div className="table-responsive">
-            <table className="data-table">
+          <div className={styles.tableResponsive}>
+            <table className={styles.dataTable}>
               <thead>
                 <tr>
                   <th>ID</th>
@@ -185,41 +185,41 @@ export default function ManageCategory() {
                   <th>Slug</th>
                   <th>Description</th>
                   <th>Status</th>
-                  <th className="text-right">Actions</th>
+                  <th className={styles.textRight}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredCategories.map((cat) => (
                   <tr key={cat.id}>
-                    <td className="id-cell">#{cat.id}</td>
-                    <td className="category-name">{cat.name}</td>
+                    <td className={styles.idCell}>#{cat.id}</td>
+                    <td className={styles.categoryName}>{cat.name}</td>
                     <td>
-                      <code className="slug-badge">{cat.slug}</code>
+                      <code className={styles.slugBadge}>{cat.slug}</code>
                     </td>
-                    <td className="desc-cell">{cat.description || "—"}</td>
+                    <td className={styles.descCell}>{cat.description || "—"}</td>
                     <td>
                       <button
                         onClick={() => handleToggleStatus(cat)}
-                        className={`status-badge ${
-                          cat.is_active ? "status-active" : "status-inactive"
+                        className={`${styles.statusBadge} ${
+                          cat.is_active ? styles.statusActive : styles.statusInactive
                         }`}
                         title="Click to toggle status"
                       >
-                        <span className="status-dot"></span>
+                        <span className={styles.statusDot}></span>
                         {cat.is_active ? "Active" : "Inactive"}
                       </button>
                     </td>
-                    <td className="text-right">
-                      <div className="action-buttons">
+                    <td className={styles.textRight}>
+                      <div className={styles.actionButtons}>
                         <button
                           onClick={() => handleOpenModal(cat)}
-                          className="btn-icon edit"
+                          className={`${styles.btnIcon} ${styles.edit}`}
                         >
                           ✏️ Edit
                         </button>
                         <button
                           onClick={() => handleDelete(cat.id)}
-                          className="btn-icon delete"
+                          className={`${styles.btnIcon} ${styles.delete}`}
                         >
                           🗑️ Delete
                         </button>
@@ -235,22 +235,22 @@ export default function ManageCategory() {
 
       {/* Form Modal */}
       {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
               <h3>{editingCategory ? "Edit Category" : "Add New Category"}</h3>
-              <button onClick={handleCloseModal} className="btn-close">
+              <button onClick={handleCloseModal} className={styles.btnClose}>
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="modal-form">
-              <div className="form-group">
+            <form onSubmit={handleSubmit} className={styles.modalForm}>
+              <div className={styles.formGroup}>
                 <label>Category Name *</label>
                 <input
                   type="text"
                   required
-                  className="input-field"
+                  className={styles.inputField}
                   placeholder="e.g. Mens Footwear"
                   value={formData.name}
                   onChange={(e) =>
@@ -259,11 +259,11 @@ export default function ManageCategory() {
                 />
               </div>
 
-              <div className="form-group">
+              <div className={styles.formGroup}>
                 <label>Description</label>
                 <textarea
                   rows="3"
-                  className="textarea-field"
+                  className={styles.textareaField}
                   placeholder="Optional details regarding this category..."
                   value={formData.description}
                   onChange={(e) =>
@@ -272,11 +272,11 @@ export default function ManageCategory() {
                 />
               </div>
 
-              <div className="form-group">
-                <label className="checkbox-label">
+              <div className={styles.formGroup}>
+                <label className={styles.checkboxLabel}>
                   <input
                     type="checkbox"
-                    className="checkbox-input"
+                    className={styles.checkboxInput}
                     checked={formData.is_active}
                     onChange={(e) =>
                       setFormData({ ...formData, is_active: e.target.checked })
@@ -286,15 +286,15 @@ export default function ManageCategory() {
                 </label>
               </div>
 
-              <div className="modal-footer">
+              <div className={styles.modalFooter}>
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="btn-secondary"
+                  className={styles.btnSecondary}
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary">
+                <button type="submit" className={styles.btnPrimary}>
                   {editingCategory ? "Update Category" : "Create Category"}
                 </button>
               </div>

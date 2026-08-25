@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <title>ZinziraOS</title>
   <style>
     * {
       box-sizing: border-box;
@@ -17,79 +18,122 @@
       justify-content: center;
       align-items: center;
       background: transparent;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
       overflow: hidden;
     }
 
     /* Glassmorphic Container */
     .card {
       position: relative;
-      width: 420px;
-      height: 300px;
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      width: 440px;
+      height: 320px;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 24px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5),
-                  0 0 40px rgba(56, 189, 248, 0.15);
+      border-radius: 28px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6),
+                  0 0 50px rgba(168, 85, 247, 0.2);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 32px;
+      padding: 36px;
       opacity: 0;
-      transform: scale(0.95);
-      animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transform: scale(0.94);
+      animation: fadeIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      overflow: hidden;
     }
 
-    /* Ambient Glow Effect */
-    .glow {
+    /* Animated Rim Glow */
+    .card::before {
+      content: "";
       position: absolute;
-      width: 180px;
-      height: 180px;
-      background: radial-gradient(circle, rgba(56, 189, 248, 0.35) 0%, rgba(99, 102, 241, 0) 70%);
-      top: 15%;
-      filter: blur(30px);
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        rgba(168, 85, 247, 0.4) 180deg,
+        transparent 360deg
+      );
+      animation: rotateGlow 6s linear infinite;
       z-index: 0;
-      animation: pulse 2.5s infinite alternate ease-in-out;
+      opacity: 0.35;
+      pointer-events: none;
     }
 
-    /* Logo Icon */
-    .logo-box {
+    .card-inner {
       position: relative;
+      z-index: 2;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Multi-layered Ambient Backlight */
+    .glow-primary {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, rgba(99, 102, 241, 0) 70%);
+      top: 10%;
+      filter: blur(35px);
       z-index: 1;
-      width: 72px;
-      height: 72px;
-      background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+      animation: pulse 3s infinite alternate ease-in-out;
+    }
+
+    .glow-secondary {
+      position: absolute;
+      width: 160px;
+      height: 160px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, rgba(0, 0, 0, 0) 70%);
+      bottom: 10%;
+      filter: blur(30px);
+      z-index: 1;
+    }
+
+    /* Premium Logo Badge */
+    .logo-box {
+      width: 68px;
+      height: 68px;
+      background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
       border-radius: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.3);
-      margin-bottom: 24px;
+      box-shadow: 0 12px 30px rgba(168, 85, 247, 0.45),
+                  inset 0 1px 1px rgba(255, 255, 255, 0.4);
+      margin-bottom: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
-    .logo-box svg {
-      width: 38px;
-      height: 38px;
-      fill: #ffffff;
+    .logo-icon {
+      font-size: 28px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
     /* App Title & Subtitle */
     .title {
-      position: relative;
-      z-index: 1;
       color: #f8fafc;
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 700;
-      letter-spacing: -0.5px;
+      letter-spacing: -0.6px;
       margin-bottom: 6px;
     }
 
+    .title .accent {
+      color: #c084fc;
+    }
+
     .subtitle {
-      position: relative;
-      z-index: 1;
       color: #94a3b8;
       font-size: 13px;
       font-weight: 500;
@@ -97,53 +141,77 @@
       margin-bottom: 28px;
     }
 
-    /* Sleek Progress Bar */
+    /* Precision Progress Indicator */
+    .progress-wrapper {
+      width: 78%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+
     .progress-track {
-      position: relative;
-      z-index: 1;
-      width: 80%;
-      height: 4px;
+      width: 100%;
+      height: 5px;
       background: rgba(255, 255, 255, 0.08);
       border-radius: 99px;
       overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .progress-bar {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      background: linear-gradient(90deg, #6366f1, #a855f7, #c084fc);
       border-radius: 99px;
-      animation: fillProgress 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
+      animation: fillProgress 2.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
 
-    /* Animations */
+    /* Keyframe Animations */
     @keyframes fadeIn {
-      to { opacity: 1; transform: scale(1); }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
 
     @keyframes pulse {
       0% { transform: scale(0.9); opacity: 0.5; }
-      100% { transform: scale(1.2); opacity: 0.9; }
+      100% { transform: scale(1.15); opacity: 0.85; }
+    }
+
+    @keyframes rotateGlow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
 
     @keyframes fillProgress {
       0% { width: 0%; }
+      30% { width: 45%; }
+      70% { width: 80%; }
       100% { width: 100%; }
     }
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="glow"></div>
-    <div class="logo-box">
-      <svg viewBox="0 0 24 24">
-        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-      </svg>
-    </div>
-    <div class="title">Apex Studio</div>
-    <div class="subtitle">Initialising core modules...</div>
-    <div class="progress-track">
-      <div class="progress-bar"></div>
+    <div class="glow-primary"></div>
+    <div class="glow-secondary"></div>
+    
+    <div class="card-inner">
+      <div class="logo-box">
+        <span class="logo-icon">Z</span>
+      </div>
+      
+      <div class="title">Zinzira<span class="accent">OS</span></div>
+      <div class="subtitle">Initialising Store Engine...</div>
+      
+      <div class="progress-wrapper">
+        <div class="progress-track">
+          <div class="progress-bar"></div>
+        </div>
+      </div>
     </div>
   </div>
 </body>

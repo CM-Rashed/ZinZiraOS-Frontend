@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import "./AddProduct.css";
+import styles from "./AddProduct.module.css";
 
 const PRODUCTS_API_URL = "http://127.0.0.1:8000/api/admin/products";
 const CATEGORIES_API_URL = "http://127.0.0.1:8000/api/admin/categories";
 
-// Helper function to extract Auth Headers from localStorage
 const getAuthHeaders = () => {
   const token = localStorage.getItem("authToken");
   return {
@@ -155,28 +154,28 @@ export default function AddProduct() {
   });
 
   return (
-    <div className="product-container">
+    <div className={styles.productContainer}>
       {/* Header */}
-      <div className="page-header">
+      <div className={styles.pageHeader}>
         <div>
-          <h2 className="header-title">Product Catalog & Add Products</h2>
-          <p className="header-subtitle">
+          <h2 className={styles.headerTitle}>Product Catalog & Add Products</h2>
+          <p className={styles.headerSubtitle}>
             Manage stock levels, location details, and margin figures
           </p>
         </div>
-        <button onClick={() => handleOpenModal()} className="btn-primary">
+        <button onClick={() => handleOpenModal()} className={styles.btnPrimary}>
           ➕ Add New Product
         </button>
       </div>
 
       {/* Toolbar */}
-      <div className="toolbar-container">
-        <div className="filters-group">
-          <div className="search-wrapper">
-            <span className="search-icon">🔍</span>
+      <div className={styles.toolbarContainer}>
+        <div className={styles.filtersGroup}>
+          <div className={styles.searchWrapper}>
+            <span className={styles.searchIcon}>🔍</span>
             <input
               type="text"
-              className="input-field has-icon"
+              className={`${styles.inputField} ${styles.hasIcon}`}
               placeholder="Search by name, SKU, or location..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -184,7 +183,7 @@ export default function AddProduct() {
           </div>
 
           <select
-            className="select-field"
+            className={styles.selectField}
             value={selectedCategoryFilter}
             onChange={(e) => setSelectedCategoryFilter(e.target.value)}
           >
@@ -197,20 +196,20 @@ export default function AddProduct() {
           </select>
         </div>
 
-        <div className="total-badge">
+        <div className={styles.totalBadge}>
           Total Items: <strong>{filteredProducts.length}</strong>
         </div>
       </div>
 
       {/* Table */}
-      <div className="table-card">
+      <div className={styles.tableCard}>
         {loading ? (
-          <div className="loading-state">Loading products...</div>
+          <div className={styles.loadingState}>Loading products...</div>
         ) : categories.length === 0 && filteredProducts.length === 0 ? (
-          <div className="empty-state">No products found in inventory.</div>
+          <div className={styles.emptyState}>No products found in inventory.</div>
         ) : (
-          <div className="table-responsive">
-            <table className="data-table">
+          <div className={styles.tableResponsive}>
+            <table className={styles.dataTable}>
               <thead>
                 <tr>
                   <th>Product & SKU</th>
@@ -219,7 +218,7 @@ export default function AddProduct() {
                   <th>Buying Price</th>
                   <th>Selling Price</th>
                   <th>Location</th>
-                  <th className="text-right">Actions</th>
+                  <th className={styles.textRight}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -228,48 +227,48 @@ export default function AddProduct() {
                   return (
                     <tr key={prod.id}>
                       <td>
-                        <div className="prod-name">{prod.name}</div>
-                        <div className="prod-sku">SKU: {prod.sku || "N/A"}</div>
+                        <div className={styles.prodName}>{prod.name}</div>
+                        <div className={styles.prodSku}>SKU: {prod.sku || "N/A"}</div>
                       </td>
                       <td>
-                        <span className="badge-category">
+                        <span className={styles.badgeCategory}>
                           {prod.category?.name || "Uncategorized"}
                         </span>
                       </td>
                       <td>
                         <span
-                          className={`stock-badge ${
+                          className={`${styles.stockBadge} ${
                             prod.quantity > 10
-                              ? "stock-high"
+                              ? styles.stockHigh
                               : prod.quantity > 0
-                              ? "stock-medium"
-                              : "stock-low"
+                              ? styles.stockMedium
+                              : styles.stockLow
                           }`}
                         >
                           {prod.quantity} Units
                         </span>
                       </td>
-                      <td className="price-mono">
+                      <td className={styles.priceMono}>
                         ${Number(prod.buying_price).toFixed(2)}
                       </td>
                       <td>
-                        <div className="price-bold">
+                        <div className={styles.priceBold}>
                           ${Number(prod.selling_price).toFixed(2)}
                         </div>
-                        <div className="margin-sub">+${margin} margin</div>
+                        <div className={styles.marginSub}>+${margin} margin</div>
                       </td>
                       <td>📍 {prod.location}</td>
-                      <td className="text-right">
-                        <div className="action-buttons">
+                      <td className={styles.textRight}>
+                        <div className={styles.actionButtons}>
                           <button
                             onClick={() => handleOpenModal(prod)}
-                            className="btn-icon edit"
+                            className={`${styles.btnIcon} ${styles.edit}`}
                           >
                             ✏️ Edit
                           </button>
                           <button
                             onClick={() => handleDelete(prod.id)}
-                            className="btn-icon delete"
+                            className={`${styles.btnIcon} ${styles.delete}`}
                           >
                             🗑️ Delete
                           </button>
@@ -286,34 +285,34 @@ export default function AddProduct() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
               <h3>{editingProduct ? "Edit Product" : "Add New Product"}</h3>
-              <button onClick={handleCloseModal} className="btn-close">
+              <button onClick={handleCloseModal} className={styles.btnClose}>
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="modal-form">
-              <div className="form-grid">
-                <div className="form-group span-full">
+            <form onSubmit={handleSubmit} className={styles.modalForm}>
+              <div className={styles.formGrid}>
+                <div className={`${styles.formGroup} ${styles.spanFull}`}>
                   <label>Product Name *</label>
                   <input
                     type="text"
                     required
-                    className="input-field"
+                    className={styles.inputField}
                     placeholder="e.g. Nike Air Max 270"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
                 </div>
 
-                <div className="form-group">
+                <div className={styles.formGroup}>
                   <label>Category *</label>
                   <select
                     required
-                    className="select-field"
+                    className={styles.selectField}
                     value={formData.category_id}
                     onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
                   >
@@ -326,74 +325,74 @@ export default function AddProduct() {
                   </select>
                 </div>
 
-                <div className="form-group">
+                <div className={styles.formGroup}>
                   <label>SKU / Barcode</label>
                   <input
                     type="text"
-                    className="input-field"
+                    className={styles.inputField}
                     placeholder="e.g. NKE-AM270-001"
                     value={formData.sku}
                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                   />
                 </div>
 
-                <div className="form-group">
+                <div className={styles.formGroup}>
                   <label>Stock Quantity *</label>
                   <input
                     type="number"
                     min="0"
                     required
-                    className="input-field"
+                    className={styles.inputField}
                     value={formData.quantity}
                     onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
                   />
                 </div>
 
-                <div className="form-group">
+                <div className={styles.formGroup}>
                   <label>Location *</label>
                   <input
                     type="text"
                     required
-                    className="input-field"
+                    className={styles.inputField}
                     placeholder="e.g. Shelf A3"
                     value={formData.location}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                   />
                 </div>
 
-                <div className="form-group">
+                <div className={styles.formGroup}>
                   <label>Buying Price ($) *</label>
                   <input
                     type="number"
                     step="0.01"
                     min="0"
                     required
-                    className="input-field"
+                    className={styles.inputField}
                     placeholder="0.00"
                     value={formData.buying_price}
                     onChange={(e) => setFormData({ ...formData, buying_price: e.target.value })}
                   />
                 </div>
 
-                <div className="form-group">
+                <div className={styles.formGroup}>
                   <label>Selling Price ($) *</label>
                   <input
                     type="number"
                     step="0.01"
                     min="0"
                     required
-                    className="input-field"
+                    className={styles.inputField}
                     placeholder="0.00"
                     value={formData.selling_price}
                     onChange={(e) => setFormData({ ...formData, selling_price: e.target.value })}
                   />
                 </div>
 
-                <div className="form-group span-full">
+                <div className={`${styles.formGroup} ${styles.spanFull}`}>
                   <label>Notes</label>
                   <textarea
                     rows="3"
-                    className="textarea-field"
+                    className={styles.textareaField}
                     placeholder="Internal details..."
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
@@ -401,11 +400,11 @@ export default function AddProduct() {
                 </div>
               </div>
 
-              <div className="modal-footer">
-                <button type="button" onClick={handleCloseModal} className="btn-secondary">
+              <div className={styles.modalFooter}>
+                <button type="button" onClick={handleCloseModal} className={styles.btnSecondary}>
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary">
+                <button type="submit" className={styles.btnPrimary}>
                   {editingProduct ? "Update Product" : "Save Product"}
                 </button>
               </div>

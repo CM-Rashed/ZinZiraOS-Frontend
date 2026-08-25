@@ -1,0 +1,498 @@
+/* Fully Scoped Parent Container */
+.manageStaffContainer {
+  /* Local Scoped Custom Variables */
+  --ms-bg-dark: #020617;
+  --ms-bg-card: rgba(15, 23, 42, 0.8);
+  --ms-bg-input: #020617;
+  --ms-border-slate: #1e293b;
+  --ms-text-main: #f8fafc;
+  --ms-text-muted: #94a3b8;
+  --ms-accent-cyan: #22d3ee;
+  --ms-emerald-color: #10b981;
+  --ms-amber-color: #f59e0b;
+  --ms-rose-color: #f43f5e;
+
+  min-height: 100vh;
+  background-color: var(--ms-bg-dark);
+  color: var(--ms-text-main);
+  padding: 1.5rem;
+  user-select: none;
+  box-sizing: border-box;
+
+  /* Nested Scoped Classes to avoid global conflicts */
+  .msHeader {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (min-width: 768px) {
+    .msHeader {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+
+  .msTitle {
+    font-size: 1.875rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    background: linear-gradient(to right, #22d3ee, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin: 0;
+  }
+
+  .msSubtitle {
+    font-size: 0.875rem;
+    color: var(--ms-text-muted);
+    margin-top: 0.25rem;
+  }
+
+  .msBtnPrimary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background-color: var(--ms-accent-cyan);
+    color: #020617;
+    font-weight: 600;
+    border: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 10px 15px -3px rgba(6, 182, 212, 0.2);
+  }
+
+  .msBtnPrimary:hover {
+    background-color: #67e8f9;
+  }
+
+  .msBtnPrimary:active {
+    transform: scale(0.95);
+  }
+
+  .msControlPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .msControlPanel {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+
+  .msSearchWrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  @media (min-width: 640px) {
+    .msSearchWrapper {
+      width: 20rem;
+    }
+  }
+
+  .msSearchIcon {
+    width: 1rem;
+    height: 1rem;
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ms-text-muted);
+  }
+
+  .msSearchInput {
+    width: 100%;
+    padding: 0.5rem 1rem 0.5rem 2.25rem;
+    background-color: #0f172a;
+    border: 1px solid var(--ms-border-slate);
+    border-radius: 0.75rem;
+    color: var(--ms-text-main);
+    font-size: 0.875rem;
+    outline: none;
+    box-sizing: border-box;
+  }
+
+  .msSearchInput:focus {
+    border-color: var(--ms-accent-cyan);
+  }
+
+  .msFilterGroup {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .msFilterBtn {
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: transparent;
+    color: var(--ms-text-muted);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .msFilterBtnActiveAll {
+    background-color: #1e293b;
+    color: var(--ms-accent-cyan);
+    border-color: #334155;
+  }
+
+  .msFilterBtnActiveFull {
+    background-color: #1e293b;
+    color: var(--ms-emerald-color);
+    border-color: #334155;
+  }
+
+  .msFilterBtnActivePart {
+    background-color: #1e293b;
+    color: var(--ms-amber-color);
+    border-color: #334155;
+  }
+
+  .msIconBtn {
+    padding: 0.5rem;
+    background-color: #0f172a;
+    border: 1px solid var(--ms-border-slate);
+    border-radius: 0.75rem;
+    color: var(--ms-text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .msIconBtn:hover {
+    border-color: #334155;
+    color: var(--ms-text-main);
+  }
+
+  .msGrid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .msGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  @media (min-width: 1024px) {
+    .msGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  @media (min-width: 1280px) {
+    .msGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  .msCard {
+    background-color: var(--ms-bg-card);
+    border: 1px solid var(--ms-border-slate);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: border-color 0.3s ease;
+  }
+
+  .msCard:hover {
+    border-color: #334155;
+  }
+
+  .msCardHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .msAvatarWrapper {
+    position: relative;
+  }
+
+  .msAvatarImg {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 1rem;
+    object-fit: cover;
+    border: 2px solid var(--ms-border-slate);
+  }
+
+  .msAvatarPlaceholder {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 1rem;
+    background: linear-gradient(to bottom right, #1e293b, #0f172a);
+    border: 2px solid var(--ms-border-slate);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ms-accent-cyan);
+    font-weight: 700;
+    font-size: 1.125rem;
+  }
+
+  .msStatusIndicator {
+    position: absolute;
+    bottom: -0.25rem;
+    right: -0.25rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 9999px;
+    border: 2px solid var(--ms-bg-dark);
+  }
+
+  .msStatusFull { background-color: var(--ms-emerald-color); }
+  .msStatusPart { background-color: var(--ms-amber-color); }
+
+  .msCardActions {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .msActionBtn {
+    padding: 0.375rem;
+    color: var(--ms-text-muted);
+    background: transparent;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .msActionBtnEdit:hover {
+    color: var(--ms-accent-cyan);
+    background-color: #1e293b;
+  }
+
+  .msActionBtnDelete:hover {
+    color: var(--ms-rose-color);
+    background-color: #1e293b;
+  }
+
+  .msStaffName {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--ms-text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+  }
+
+  .msStaffId {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.125rem;
+    margin-bottom: 1rem;
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: rgba(34, 211, 238, 0.9);
+  }
+
+  .msDetailsList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    border-top: 1px solid rgba(30, 41, 59, 0.8);
+    padding-top: 0.75rem;
+  }
+
+  .msDetailRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--ms-text-muted);
+  }
+
+  .msDetailLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .msSalaryText {
+    font-weight: 600;
+    color: var(--ms-emerald-color);
+  }
+
+  .msCardFooter {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(30, 41, 59, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.625rem;
+    color: var(--ms-text-muted);
+  }
+
+  .msModalOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background-color: rgba(2, 6, 23, 0.8);
+    backdrop-filter: blur(4px);
+  }
+
+  .msModalContent {
+    background-color: #0f172a;
+    border: 1px solid var(--ms-border-slate);
+    width: 100%;
+    max-width: 32rem;
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+  }
+
+  .msModalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--ms-border-slate);
+  }
+
+  .msModalTitle {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--ms-text-main);
+    margin: 0;
+  }
+
+  .msErrorBox {
+    margin: 1rem 1.5rem 0 1.5rem;
+    padding: 0.75rem;
+    background-color: rgba(244, 63, 94, 0.1);
+    border: 1px solid rgba(244, 63, 94, 0.3);
+    color: var(--ms-rose-color);
+    font-size: 0.75rem;
+    border-radius: 0.75rem;
+  }
+
+  .msForm {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .msFormGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .msFullWidth {
+    grid-column: span 2 / span 2;
+  }
+
+  .msInputGroup {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .msLabel {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ms-text-muted);
+    margin-bottom: 0.25rem;
+  }
+
+  .msInput {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--ms-bg-input);
+    border: 1px solid var(--ms-border-slate);
+    border-radius: 0.75rem;
+    color: var(--ms-text-main);
+    font-size: 0.875rem;
+    outline: none;
+    box-sizing: border-box;
+  }
+
+  .msInput:focus {
+    border-color: var(--ms-accent-cyan);
+  }
+
+  .msPhotoUploadSection {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .msPhotoPreviewBox {
+    position: relative;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 1rem;
+    background-color: #1e293b;
+    border: 1px solid var(--ms-border-slate);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .msUploadOverlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(2, 6, 23, 0.6);
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: var(--ms-accent-cyan);
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+
+  .msPhotoPreviewBox:hover .msUploadOverlay {
+    opacity: 1;
+  }
+
+  .msModalFooter {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--ms-border-slate);
+  }
+
+  .msBtnCancel {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ms-text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+  .msBtnCancel:hover {
+    color: var(--ms-text-main);
+  }
+}
