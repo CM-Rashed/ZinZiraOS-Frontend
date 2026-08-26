@@ -3,25 +3,46 @@ import styles from "./AddProduct.module.css";
 
 const PRODUCTS_API_URL = "http://127.0.0.1:8000/api/admin/products";
 const CATEGORIES_API_URL = "http://127.0.0.1:8000/api/admin/categories";
+const STORAGE_BASE_URL = "http://127.0.0.1:8000/storage/";
 
-const getAuthHeaders = () => {
+const getAuthHeaders = (isFormData = false) => {
   const token = localStorage.getItem("authToken");
-  return {
-    "Content-Type": "application/json",
+  const headers = {
     Accept: "application/json",
     Authorization: token ? `Bearer ${token}` : "",
   };
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
+  return headers;
+};
+
+// Helper function to safely parse images array/string
+const parseProductImages = (imagesData) => {
+  if (!imagesData) return [];
+  if (Array.isArray(imagesData)) return imagesData;
+  if (typeof imagesData === "string") {
+    try {
+      const parsed = JSON.parse(imagesData);
+      return Array.isArray(parsed) ? parsed : [imagesData];
+    } catch {
+      return [imagesData];
+    }
+  }
+  return [];
 };
 
 export default function AddProduct() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
 
+  // Form State
   const [formData, setFormData] = useState({
     category_id: "",
     name: "",
@@ -32,6 +53,11 @@ export default function AddProduct() {
     location: "",
     notes: "",
   });
+
+  // Image Upload State
+  const [imageFiles, setImageFiles] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -55,19 +81,34 @@ export default function AddProduct() {
     fetchData();
   }, []);
 
+  // Clean up object URLs to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [imagePreviews]);
+
   const handleOpenModal = (product = null) => {
+    // Reset file states & clear existing previews
+    imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+    setImageFiles([]);
+    setImagePreviews([]);
+    setExistingImages([]);
+
     if (product) {
       setEditingProduct(product);
       setFormData({
         category_id: product.category_id || "",
-        name: product.name,
+        name: product.name || "",
         sku: product.sku || "",
-        quantity: product.quantity,
-        buying_price: product.buying_price,
-        selling_price: product.selling_price,
-        location: product.location,
+        quantity: product.quantity || 0,
+        buying_price: product.buying_price || "",
+        selling_price: product.selling_price || "",
+        location: product.location || "",
         notes: product.notes || "",
       });
+      
+      setExistingImages(parseProductImages(product.images));
     } else {
       setEditingProduct(null);
       setFormData({
@@ -85,30 +126,108 @@ export default function AddProduct() {
   };
 
   const handleCloseModal = () => {
+    imagePreviews.forEach((url) => URL.revokeObjectURL(url));
     setIsModalOpen(false);
     setEditingProduct(null);
+    setImageFiles([]);
+    setImagePreviews([]);
+    setExistingImages([]);
+  };
+
+  const handleImageChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    if (!selectedFiles.length) return;
+
+    const currentTotal = existingImages.length + imageFiles.length;
+    const availableSlots = 3 - currentTotal;
+
+    if (availableSlots <= 0) {
+      alert("You can only upload a maximum of 3 images.");
+      e.target.value = "";
+      return;
+    }
+
+    // Take only what fits within the 3 image limit
+    const validFiles = selectedFiles.slice(0, availableSlots);
+
+    if (selectedFiles.length > availableSlots) {
+      alert(`Only ${availableSlots} more image(s) could be added. Maximum is 3.`);
+    }
+
+    // Generate blob preview URLs for valid new files
+    const newPreviews = validFiles.map((file) => URL.createObjectURL(file));
+
+    setImageFiles((prevFiles) => [...prevFiles, ...validFiles]);
+    setImagePreviews((prevPreviews) => [...prevPreviews, ...newPreviews]);
+
+    // Reset input value so re-selecting the same file works
+    e.target.value = "";
+  };
+
+  const handleRemoveExistingImage = (index) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveNewImage = (index) => {
+    // Revoke target preview URL memory
+    if (imagePreviews[index]) {
+      URL.revokeObjectURL(imagePreviews[index]);
+    }
+
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const isEdit = Boolean(editingProduct);
-    const url = isEdit ? `${PRODUCTS_API_URL}/${editingProduct.id}` : PRODUCTS_API_URL;
-    const method = isEdit ? "PUT" : "POST";
 
-    const payload = {
-      ...formData,
-      category_id: Number(formData.category_id),
-      quantity: Number(formData.quantity),
-      buying_price: Number(formData.buying_price),
-      selling_price: Number(formData.selling_price),
-      sku: formData.sku.trim() === "" ? null : formData.sku,
-    };
+    // Validate 1 to 3 images rule
+    const totalImages = existingImages.length + imageFiles.length;
+    if (totalImages < 1) {
+      alert("Please upload at least 1 image for the product.");
+      return;
+    }
+    if (totalImages > 3) {
+      alert("You can upload a maximum of 3 images.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    const data = new FormData();
+    data.append("category_id", formData.category_id);
+    data.append("name", formData.name);
+    if (formData.sku.trim()) data.append("sku", formData.sku.trim());
+    data.append("quantity", formData.quantity);
+    data.append("buying_price", formData.buying_price);
+    data.append("selling_price", formData.selling_price);
+    data.append("location", formData.location);
+    if (formData.notes) data.append("notes", formData.notes);
+
+    // Append remaining existing images (for edit mode)
+    existingImages.forEach((img) => {
+      data.append("existing_images[]", img);
+    });
+
+    // Append new uploaded binary image files
+    imageFiles.forEach((file) => {
+      data.append("images[]", file);
+    });
+
+    let url = PRODUCTS_API_URL;
+
+    // Laravel requires multipart/form-data PUT requests to pass _method='PUT' over POST
+    if (isEdit) {
+      url = `${PRODUCTS_API_URL}/${editingProduct.id}`;
+      data.append("_method", "PUT");
+    }
 
     try {
       const response = await fetch(url, {
-        method,
-        headers: getAuthHeaders(),
-        body: JSON.stringify(payload),
+        method: "POST",
+        headers: getAuthHeaders(true),
+        body: data,
       });
 
       if (response.ok) {
@@ -120,6 +239,8 @@ export default function AddProduct() {
       }
     } catch (error) {
       console.error("Product submit error:", error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -155,16 +276,16 @@ export default function AddProduct() {
 
   return (
     <div className={styles.productContainer}>
-      {/* Header */}
+      {/* Page Header */}
       <div className={styles.pageHeader}>
         <div>
-          <h2 className={styles.headerTitle}>Product Catalog & Add Products</h2>
+          <h2 className={styles.headerTitle}>Product Catalog</h2>
           <p className={styles.headerSubtitle}>
-            Manage stock levels, location details, and margin figures
+            Manage stock levels, location details, margins, and media assets
           </p>
         </div>
         <button onClick={() => handleOpenModal()} className={styles.btnPrimary}>
-          ➕ Add New Product
+          <span className={styles.btnIconSymbol}>+</span> Add New Product
         </button>
       </div>
 
@@ -201,17 +322,24 @@ export default function AddProduct() {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Main Inventory Table Card */}
       <div className={styles.tableCard}>
         {loading ? (
-          <div className={styles.loadingState}>Loading products...</div>
-        ) : categories.length === 0 && filteredProducts.length === 0 ? (
-          <div className={styles.emptyState}>No products found in inventory.</div>
+          <div className={styles.loadingState}>
+            <p>Loading catalog inventory...</p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className={styles.emptyState}>
+            <div className={styles.emptyIcon}>📦</div>
+            <h3>No products found</h3>
+            <p>Try adjusting your search criteria or add a new product.</p>
+          </div>
         ) : (
           <div className={styles.tableResponsive}>
             <table className={styles.dataTable}>
               <thead>
                 <tr>
+                  <th>Media</th>
                   <th>Product & SKU</th>
                   <th>Category</th>
                   <th>Stock</th>
@@ -224,8 +352,29 @@ export default function AddProduct() {
               <tbody>
                 {filteredProducts.map((prod) => {
                   const margin = (prod.selling_price - prod.buying_price).toFixed(2);
+                  const prodImages = parseProductImages(prod.images);
+                  const firstImage = prodImages.length > 0 ? prodImages[0] : null;
+
                   return (
                     <tr key={prod.id}>
+                      <td>
+                        <div className={styles.thumbnailCell}>
+                          {firstImage ? (
+                            <img
+                              src={`${STORAGE_BASE_URL}${firstImage}`}
+                              alt={prod.name}
+                              className={styles.tableThumbnail}
+                            />
+                          ) : (
+                            <div className={styles.noThumbnail}>No Img</div>
+                          )}
+                          {prodImages.length > 1 && (
+                            <span className={styles.imageCountBadge}>
+                              +{prodImages.length - 1}
+                            </span>
+                          )}
+                        </div>
+                      </td>
                       <td>
                         <div className={styles.prodName}>{prod.name}</div>
                         <div className={styles.prodSku}>SKU: {prod.sku || "N/A"}</div>
@@ -257,18 +406,22 @@ export default function AddProduct() {
                         </div>
                         <div className={styles.marginSub}>+${margin} margin</div>
                       </td>
-                      <td>📍 {prod.location}</td>
+                      <td>
+                        <span className={styles.locationTag}>📍 {prod.location}</span>
+                      </td>
                       <td className={styles.textRight}>
                         <div className={styles.actionButtons}>
                           <button
                             onClick={() => handleOpenModal(prod)}
                             className={`${styles.btnIcon} ${styles.edit}`}
+                            title="Edit Product"
                           >
                             ✏️ Edit
                           </button>
                           <button
                             onClick={() => handleDelete(prod.id)}
                             className={`${styles.btnIcon} ${styles.delete}`}
+                            title="Delete Product"
                           >
                             🗑️ Delete
                           </button>
@@ -283,33 +436,105 @@ export default function AddProduct() {
         )}
       </div>
 
-      {/* Modal */}
+      {/* Modal Dialog */}
       {isModalOpen && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
-              <h3>{editingProduct ? "Edit Product" : "Add New Product"}</h3>
+              <div>
+                <h3 className={styles.modalTitle}>
+                  {editingProduct ? "Edit Product Details" : "Create New Product"}
+                </h3>
+                <p className={styles.modalSubtitle}>
+                  Fill in product specifications and upload showcase images
+                </p>
+              </div>
               <button onClick={handleCloseModal} className={styles.btnClose}>
                 ✕
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className={styles.modalForm}>
+              {/* Image Upload Zone */}
+              <div className={styles.uploadSection}>
+                <label className={styles.fieldLabel}>
+                  Product Images <span className={styles.reqAsterisk}>*</span>
+                  <span className={styles.fieldHint}>(Min 1, Max 3 images)</span>
+                </label>
+
+                <div className={styles.previewGrid}>
+                  {/* Existing Images (Edit mode) */}
+                  {existingImages.map((imgPath, index) => (
+                    <div key={`existing-${index}`} className={styles.previewItem}>
+                      <img
+                        src={`${STORAGE_BASE_URL}${imgPath}`}
+                        alt="Product preview"
+                        className={styles.previewImage}
+                      />
+                      <button
+                        type="button"
+                        className={styles.btnRemoveImg}
+                        onClick={() => handleRemoveExistingImage(index)}
+                      >
+                        ✕
+                      </button>
+                      <span className={styles.savedTag}>Saved</span>
+                    </div>
+                  ))}
+
+                  {/* New Upload Previews */}
+                  {imagePreviews.map((url, index) => (
+                    <div key={`new-${index}`} className={styles.previewItem}>
+                      <img src={url} alt="New upload preview" className={styles.previewImage} />
+                      <button
+                        type="button"
+                        className={styles.btnRemoveImg}
+                        onClick={() => handleRemoveNewImage(index)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* Upload Box Slot */}
+                  {existingImages.length + imageFiles.length < 3 && (
+                    <label className={styles.uploadDropzone}>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/jpg,image/webp"
+                        multiple
+                        className={styles.fileInputHidden}
+                        onChange={handleImageChange}
+                      />
+                      <div className={styles.dropzoneContent}>
+                        <span className={styles.dropzoneIcon}>📷</span>
+                        <span className={styles.dropzoneText}>Upload Photo</span>
+                      </div>
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              {/* Input Form Fields */}
               <div className={styles.formGrid}>
                 <div className={`${styles.formGroup} ${styles.spanFull}`}>
-                  <label>Product Name *</label>
+                  <label className={styles.fieldLabel}>
+                    Product Name <span className={styles.reqAsterisk}>*</span>
+                  </label>
                   <input
                     type="text"
                     required
                     className={styles.inputField}
-                    placeholder="e.g. Nike Air Max 270"
+                    placeholder="e.g. Logitech MX Master 3S"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>Category *</label>
+                  <label className={styles.fieldLabel}>
+                    Category <span className={styles.reqAsterisk}>*</span>
+                  </label>
                   <select
                     required
                     className={styles.selectField}
@@ -326,18 +551,20 @@ export default function AddProduct() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>SKU / Barcode</label>
+                  <label className={styles.fieldLabel}>SKU / Barcode</label>
                   <input
                     type="text"
                     className={styles.inputField}
-                    placeholder="e.g. NKE-AM270-001"
+                    placeholder="e.g. LOGI-MX3S-BLK"
                     value={formData.sku}
                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                   />
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>Stock Quantity *</label>
+                  <label className={styles.fieldLabel}>
+                    Stock Quantity <span className={styles.reqAsterisk}>*</span>
+                  </label>
                   <input
                     type="number"
                     min="0"
@@ -349,19 +576,23 @@ export default function AddProduct() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>Location *</label>
+                  <label className={styles.fieldLabel}>
+                    Storage Location <span className={styles.reqAsterisk}>*</span>
+                  </label>
                   <input
                     type="text"
                     required
                     className={styles.inputField}
-                    placeholder="e.g. Shelf A3"
+                    placeholder="e.g. Aisle 3, Shelf B"
                     value={formData.location}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                   />
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>Buying Price ($) *</label>
+                  <label className={styles.fieldLabel}>
+                    Buying Price ($) <span className={styles.reqAsterisk}>*</span>
+                  </label>
                   <input
                     type="number"
                     step="0.01"
@@ -375,7 +606,9 @@ export default function AddProduct() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>Selling Price ($) *</label>
+                  <label className={styles.fieldLabel}>
+                    Selling Price ($) <span className={styles.reqAsterisk}>*</span>
+                  </label>
                   <input
                     type="number"
                     step="0.01"
@@ -389,11 +622,11 @@ export default function AddProduct() {
                 </div>
 
                 <div className={`${styles.formGroup} ${styles.spanFull}`}>
-                  <label>Notes</label>
+                  <label className={styles.fieldLabel}>Internal Notes</label>
                   <textarea
                     rows="3"
                     className={styles.textareaField}
-                    placeholder="Internal details..."
+                    placeholder="Add supplier details or handling notes..."
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   />
@@ -401,11 +634,24 @@ export default function AddProduct() {
               </div>
 
               <div className={styles.modalFooter}>
-                <button type="button" onClick={handleCloseModal} className={styles.btnSecondary}>
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className={styles.btnSecondary}
+                  disabled={submitting}
+                >
                   Cancel
                 </button>
-                <button type="submit" className={styles.btnPrimary}>
-                  {editingProduct ? "Update Product" : "Save Product"}
+                <button
+                  type="submit"
+                  className={styles.btnPrimary}
+                  disabled={submitting}
+                >
+                  {submitting
+                    ? "Saving..."
+                    : editingProduct
+                    ? "Update Product"
+                    : "Save Product"}
                 </button>
               </div>
             </form>
