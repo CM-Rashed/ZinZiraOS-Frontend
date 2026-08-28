@@ -18,6 +18,9 @@ export default function InstantOrders() {
 
   const [itemInputs, setItemInputs] = useState({});
 
+  // Helper to extract stored Auth Token
+  const getAuthToken = () => localStorage.getItem('authToken');
+
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -26,16 +29,23 @@ export default function InstantOrders() {
     setLoadingProducts(true);
     setErrorMessage('');
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/products', {
-        headers: { 'Accept': 'application/json' },
-      });
+      const token = getAuthToken();
+      const headers = {
+        'Accept': 'application/json',
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch('http://127.0.0.1:8000/api/products', { headers });
       const result = await response.json();
 
       if (response.ok) {
         const productList = Array.isArray(result) ? result : (result.data || []);
         setProducts(productList);
       } else {
-        setErrorMessage('Failed to load products list from API.');
+        setErrorMessage(result.message || 'Failed to load products list from API.');
       }
     } catch (error) {
       console.error('Product Fetch Error:', error);
@@ -137,18 +147,25 @@ export default function InstantOrders() {
     setIsSubmitting(true);
     setErrorMessage('');
 
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     // Payload formatted strictly for Laravel validateOrder method
     const payload = {
       items: cart.map(({ image, ...rest }) => rest),
     };
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/orders', {
+      const response = await fetch('http://127.0.0.1:8000/api/admin/orders', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+        headers,
         body: JSON.stringify(payload),
       });
 

@@ -13,6 +13,9 @@ export default function ManageOrders() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
 
+  // Helper to extract stored Auth Token
+  const getAuthToken = () => localStorage.getItem('authToken');
+
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -22,8 +25,17 @@ export default function ManageOrders() {
     setLoading(true);
     setFeedback({ type: '', message: '' });
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/orders', {
-        headers: { Accept: 'application/json' },
+      const token = getAuthToken();
+      const headers = {
+        Accept: 'application/json',
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch('http://127.0.0.1:8000/api/admin/orders', {
+        headers,
       });
       const result = await response.json();
 
@@ -32,7 +44,7 @@ export default function ManageOrders() {
         const list = Array.isArray(result.data) ? result.data : result.data?.data || [];
         setOrders(list);
       } else {
-        showFeedback('error', 'Failed to retrieve order records.');
+        showFeedback('error', result.message || 'Failed to retrieve order records.');
       }
     } catch (error) {
       console.error('Fetch Orders Error:', error);
@@ -54,9 +66,18 @@ export default function ManageOrders() {
     }
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/orders/${orderId}`, {
+      const token = getAuthToken();
+      const headers = {
+        Accept: 'application/json',
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`http://127.0.0.1:8000/api/admin/orders/${orderId}`, {
         method: 'DELETE',
-        headers: { Accept: 'application/json' },
+        headers,
       });
 
       const result = await response.json();
@@ -99,12 +120,19 @@ export default function ManageOrders() {
     const payload = { items: formattedItems };
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/orders/${editingOrder.id}`, {
+      const token = getAuthToken();
+      const headers = {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`http://127.0.0.1:8000/api/admin/orders/${editingOrder.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
+        headers,
         body: JSON.stringify(payload),
       });
 
