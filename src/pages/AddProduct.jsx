@@ -3,7 +3,8 @@ import styles from "./AddProduct.module.css";
 
 const PRODUCTS_API_URL = "http://127.0.0.1:8000/api/admin/products";
 const CATEGORIES_API_URL = "http://127.0.0.1:8000/api/admin/categories";
-const STORAGE_BASE_URL = "http://127.0.0.1:8000/storage/";
+// Set to server root path since files are uploaded directly to the public folder (e.g., public/uploads/products)
+const SERVER_BASE_URL = "http://127.0.0.1:8000/";
 
 const getAuthHeaders = (isFormData = false) => {
   const token = localStorage.getItem("authToken");
@@ -205,14 +206,14 @@ export default function AddProduct() {
     data.append("location", formData.location);
     if (formData.notes) data.append("notes", formData.notes);
 
-    // Append remaining existing images (for edit mode)
-    existingImages.forEach((img) => {
-      data.append("existing_images[]", img);
+    // Append remaining existing images (for edit mode) using indexed keys
+    existingImages.forEach((img, index) => {
+      data.append(`existing_images[${index}]`, img);
     });
 
-    // Append new uploaded binary image files
-    imageFiles.forEach((file) => {
-      data.append("images[]", file);
+    // Append new uploaded binary image files using explicit indexed keys
+    imageFiles.forEach((file, index) => {
+      data.append(`images[${index}]`, file);
     });
 
     let url = PRODUCTS_API_URL;
@@ -361,7 +362,7 @@ export default function AddProduct() {
                         <div className={styles.thumbnailCell}>
                           {firstImage ? (
                             <img
-                              src={`${STORAGE_BASE_URL}${firstImage}`}
+                              src={`${SERVER_BASE_URL}${firstImage}`}
                               alt={prod.name}
                               className={styles.tableThumbnail}
                             />
@@ -467,7 +468,7 @@ export default function AddProduct() {
                   {existingImages.map((imgPath, index) => (
                     <div key={`existing-${index}`} className={styles.previewItem}>
                       <img
-                        src={`${STORAGE_BASE_URL}${imgPath}`}
+                        src={`${SERVER_BASE_URL}${imgPath}`}
                         alt="Product preview"
                         className={styles.previewImage}
                       />

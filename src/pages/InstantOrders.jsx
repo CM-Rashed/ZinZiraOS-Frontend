@@ -1,8 +1,41 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import './CreateOrder.css';
 
+// Server domain base URL where uploaded files are hosted
+const SERVER_BASE_URL = 'http://127.0.0.1:8000/';
+
 // SVG Fallback for missing product images
 const FALLBACK_IMAGE = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+
+// Helper function to resolve relative image paths to full URLs or handle arrays/JSON strings
+const resolveImageUrl = (imagesData) => {
+  if (!imagesData) return FALLBACK_IMAGE;
+
+  let firstImage = null;
+
+  if (Array.isArray(imagesData) && imagesData.length > 0) {
+    firstImage = imagesData[0];
+  } else if (typeof imagesData === 'string') {
+    if (imagesData.startsWith('http://') || imagesData.startsWith('https://') || imagesData.startsWith('data:')) {
+      return imagesData;
+    }
+    try {
+      const parsed = JSON.parse(imagesData);
+      firstImage = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : imagesData;
+    } catch {
+      firstImage = imagesData;
+    }
+  }
+
+  if (!firstImage) return FALLBACK_IMAGE;
+  if (firstImage.startsWith('http://') || firstImage.startsWith('https://') || firstImage.startsWith('data:')) {
+    return firstImage;
+  }
+
+  // Prepend server URL and sanitize double slashes
+  const cleanPath = firstImage.startsWith('/') ? firstImage.substring(1) : firstImage;
+  return `${SERVER_BASE_URL}${cleanPath}`;
+};
 
 export default function InstantOrders() {
   const [products, setProducts] = useState([]);
@@ -61,7 +94,7 @@ export default function InstantOrders() {
       [productId]: {
         quantity: 1,
         discount: 0,
-        sellPrice: products.find((p) => p.id === productId)?.price || 0,
+        sellPrice: products.find((p) => p.id === productId)?.selling_price || products.find((p) => p.id === productId)?.price || 0,
         ...prev[productId],
         [field]: value,
       },
@@ -73,7 +106,7 @@ export default function InstantOrders() {
       itemInputs[product.id] || {
         quantity: 1,
         discount: 0,
-        sellPrice: product.price || 0,
+        sellPrice: product.selling_price || product.price || 0,
       }
     );
   };
@@ -81,11 +114,14 @@ export default function InstantOrders() {
   const handleAddToCart = (product) => {
     const inputs = getInputs(product);
     const qty = parseInt(inputs.quantity) || 1;
-    const price = parseFloat(inputs.sellPrice) || parseFloat(product.price) || 0;
+    const price = parseFloat(inputs.sellPrice) || parseFloat(product.selling_price) || parseFloat(product.price) || 0;
     const discount = parseFloat(inputs.discount) || 0;
 
     const itemTotalPrice = Math.max(0, (price - discount) * qty);
     const existingIndex = cart.findIndex((item) => item.product_id === product.id);
+
+    // Dynamic resolution of image for cart display
+    const resolvedImg = resolveImageUrl(product.images || product.image || product.image_url);
 
     if (existingIndex > -1) {
       const updatedCart = [...cart];
@@ -113,7 +149,7 @@ export default function InstantOrders() {
           products_quantity: qty,
           products_total_price: itemTotalPrice,
           sell_by: sellBy || 'admin',
-          image: product.image || product.image_url || null,
+          image: resolvedImg,
         },
       ]);
     }
@@ -157,7 +193,7 @@ export default function InstantOrders() {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    // Payload formatted strictly for Laravel validateOrder method
+    // Payload formatted strictly for backend validation
     const payload = {
       items: cart.map(({ image, ...rest }) => rest),
     };
@@ -238,7 +274,7 @@ export default function InstantOrders() {
               <div className="product-grid">
                 {filteredProducts.map((product) => {
                   const inputs = getInputs(product);
-                  const imageUrl = product.image || product.image_url || FALLBACK_IMAGE;
+                  const imageUrl = resolveImageUrl(product.images || product.image || product.image_url);
 
                   return (
                     <div key={product.id} className="product-card">
