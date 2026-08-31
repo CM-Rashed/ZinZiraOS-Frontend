@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Search, PlusCircle, Package, AlertCircle, X, Check, Loader2 } from "lucide-react";
 import styles from "./Inventory.module.css";
-
-const API_BASE_URL = "http://127.0.0.1:8000/api/admin";
-
+const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL
+const API_BASE_URL = `${SERVER_BASE_URL}/api/admin`;
+  
 export default function Inventory() {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);

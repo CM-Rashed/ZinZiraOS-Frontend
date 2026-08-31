@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite"; // 1. UNCOMMENTED THIS IMPORT
+import tailwindcss from "@tailwindcss/vite";
 
 const host = process.env.TAURI_DEV_HOST;
 
@@ -8,8 +8,11 @@ const host = process.env.TAURI_DEV_HOST;
 export default defineConfig(async () => ({
   plugins: [
     react(), 
-    tailwindcss(), // 2. ADDED TAILWIND PLUGIN HERE
+    tailwindcss(),
   ],
+
+  // Expose environment variables to the frontend (import.meta.env)
+  envPrefix: ["VITE_", "TAURI_ENV_*"],
 
   // Vite options tailored for Tauri development
   clearScreen: false,

@@ -15,8 +15,8 @@ import {
 } from "lucide-react";
 import styles from "./ManageCustomer.module.css";
 
-const API_BASE_URL = "http://127.0.0.1:8000/api/admin/customers";
-const HARDCODED_TOKEN = "17|XCgIM7npZbRTfXn0gDbK8wZibwQ9mvhayEjl3hMga815698f";
+const SERVER_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
+const API_BASE_URL = `${SERVER_BASE_URL}/api/admin/customers`;
 
 export default function ManageCustomer() {
   const [customers, setCustomers] = useState([]);
@@ -34,14 +34,29 @@ export default function ManageCustomer() {
     due: "0.00",
   });
 
-  // Helper function to build headers with Authorization token
+  // Dynamic Auth Headers based on localStorage
   const getAuthHeaders = () => {
-    const token = localStorage.getItem("authToken") || HARDCODED_TOKEN;
-    return {
+    const token = localStorage.getItem("authToken");
+    const headers = {
       "Content-Type": "application/json",
       Accept: "application/json",
-      Authorization: `Bearer ${token}`,
     };
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    return headers;
+  };
+
+  // Helper to read admin data when needed
+  const getAdminData = () => {
+    try {
+      const stored = localStorage.getItem("adminData");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
   };
 
   // Fetch Customers (GET /api/admin/customers)
@@ -53,12 +68,15 @@ export default function ManageCustomer() {
         headers: getAuthHeaders(),
       });
       const result = await response.json();
-      if (result.success) {
-        setCustomers(result.data);
+      
+      if (response.ok && (result.success || Array.isArray(result) || Array.isArray(result.data))) {
+        const customerList = Array.isArray(result) ? result : (result.data || []);
+        setCustomers(customerList);
       } else {
         showToast(result.message || "Failed to fetch customers.", "error");
       }
     } catch (error) {
+      console.error("Fetch Customers Error:", error);
       showToast("Network error while fetching customers.", "error");
     } finally {
       setLoading(false);
@@ -109,7 +127,7 @@ export default function ManageCustomer() {
 
       const result = await response.json();
 
-      if (result.success) {
+      if (response.ok && (result.success || result.status === "success" || result.id)) {
         showToast(result.message || "Customer saved successfully.");
         setIsModalOpen(false);
         fetchCustomers();
@@ -117,6 +135,7 @@ export default function ManageCustomer() {
         showToast(result.message || "Validation failed or bad request.", "error");
       }
     } catch (error) {
+      console.error("Customer Submit Error:", error);
       showToast("Operation failed. Try again.", "error");
     }
   };
@@ -132,13 +151,14 @@ export default function ManageCustomer() {
       });
       const result = await response.json();
 
-      if (result.success) {
+      if (response.ok && (result.success || result.status === "success")) {
         showToast(result.message || "Customer deleted.");
         setCustomers((prev) => prev.filter((item) => item.id !== id));
       } else {
         showToast(result.message || "Failed to delete customer.", "error");
       }
     } catch (error) {
+      console.error("Delete Customer Error:", error);
       showToast("Failed to delete customer.", "error");
     }
   };
@@ -146,7 +166,7 @@ export default function ManageCustomer() {
   // Filtered List
   const filteredCustomers = customers.filter(
     (c) =>
-      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (c.name && c.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (c.phone && c.phone.includes(searchQuery))
   );
 

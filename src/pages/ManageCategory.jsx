@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "./ManageCategory.module.css";
-
-const API_BASE_URL = "http://127.0.0.1:8000/api/admin/categories";
+const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL
+const API_BASE_URL = `${SERVER_BASE_URL}/api/admin/categories`;
 
 // Helper function to extract Auth Headers from localStorage
 const getAuthHeaders = () => {

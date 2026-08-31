@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import './CreateOrder.css';
 
-// Server domain base URL where uploaded files are hosted
-const SERVER_BASE_URL = 'http://127.0.0.1:8000/';
+// Server domain base URL
+const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
 // SVG Fallback for missing product images
 const FALLBACK_IMAGE = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
 
-// Helper function to resolve relative image paths to full URLs or handle arrays/JSON strings
+// Helper function to resolve relative image paths to full URLs safely
 const resolveImageUrl = (imagesData) => {
   if (!imagesData) return FALLBACK_IMAGE;
 
@@ -16,7 +16,7 @@ const resolveImageUrl = (imagesData) => {
   if (Array.isArray(imagesData) && imagesData.length > 0) {
     firstImage = imagesData[0];
   } else if (typeof imagesData === 'string') {
-    if (imagesData.startsWith('http://') || imagesData.startsWith('https://') || imagesData.startsWith('data:')) {
+    if (imagesData.startsWith('http://') || imagesData.startsWith('https://') || imagesData.startsWith('data:') || imagesData.startsWith('blob:')) {
       return imagesData;
     }
     try {
@@ -28,13 +28,13 @@ const resolveImageUrl = (imagesData) => {
   }
 
   if (!firstImage) return FALLBACK_IMAGE;
-  if (firstImage.startsWith('http://') || firstImage.startsWith('https://') || firstImage.startsWith('data:')) {
+  if (firstImage.startsWith('http://') || firstImage.startsWith('https://') || firstImage.startsWith('data:') || firstImage.startsWith('blob:')) {
     return firstImage;
   }
 
-  // Prepend server URL and sanitize double slashes
-  const cleanPath = firstImage.startsWith('/') ? firstImage.substring(1) : firstImage;
-  return `${SERVER_BASE_URL}${cleanPath}`;
+  const baseUrl = (SERVER_BASE_URL || '').replace(/\/+$/, '');
+  const cleanPath = firstImage.startsWith('/') ? firstImage : `/${firstImage}`;
+  return `${baseUrl}${cleanPath}`;
 };
 
 export default function InstantOrders() {
@@ -71,7 +71,8 @@ export default function InstantOrders() {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch('http://127.0.0.1:8000/api/products', { headers });
+      // Fixed endpoint here:
+      const response = await fetch(`${SERVER_BASE_URL}/api/admin/products`, { headers });
       const result = await response.json();
 
       if (response.ok) {
@@ -120,7 +121,6 @@ export default function InstantOrders() {
     const itemTotalPrice = Math.max(0, (price - discount) * qty);
     const existingIndex = cart.findIndex((item) => item.product_id === product.id);
 
-    // Dynamic resolution of image for cart display
     const resolvedImg = resolveImageUrl(product.images || product.image || product.image_url);
 
     if (existingIndex > -1) {
@@ -193,13 +193,12 @@ export default function InstantOrders() {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    // Payload formatted strictly for backend validation
     const payload = {
       items: cart.map(({ image, ...rest }) => rest),
     };
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/admin/orders', {
+      const response = await fetch(`${SERVER_BASE_URL}/api/admin/orders`, {
         method: 'POST',
         headers,
         body: JSON.stringify(payload),
@@ -377,10 +376,10 @@ export default function InstantOrders() {
                         <div className="cart-item-details">
                           <h4>{item.products_name}</h4>
                           <p>
-                            {item.products_quantity} × ${item.products_price.toFixed(2)}
+                            {item.products_quantity} × ${parseFloat(item.products_price).toFixed(2)}
                             {item.products_discount > 0 && (
                               <span className="discount-tag">
-                                {' '}(-${(item.products_discount * item.products_quantity).toFixed(2)})
+                                {' '}(-${(parseFloat(item.products_discount) * item.products_quantity).toFixed(2)})
                               </span>
                             )}
                           </p>
@@ -388,7 +387,7 @@ export default function InstantOrders() {
                         </div>
                         <div className="cart-item-right">
                           <span className="cart-item-total">
-                            ${item.products_total_price.toFixed(2)}
+                            ${parseFloat(item.products_total_price).toFixed(2)}
                           </span>
                           <button
                             className="remove-btn"

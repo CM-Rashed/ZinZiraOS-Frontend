@@ -5,7 +5,7 @@ export default function ShopSetup({ onComplete }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   // Login Form State
   const [loginData, setLoginData] = useState({
     login: "",
@@ -73,7 +73,7 @@ export default function ShopSetup({ onComplete }) {
     setError(null);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/admin/login", {
+      const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -87,7 +87,7 @@ export default function ShopSetup({ onComplete }) {
       if (!response.ok) {
         throw new Error(data.message || "Invalid credentials.");
       }
-
+      
       localStorage.setItem("authToken", data.token);
       localStorage.setItem("adminData", JSON.stringify(data.admin));
 
@@ -106,7 +106,7 @@ export default function ShopSetup({ onComplete }) {
     setError(null);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/admin/register", {
+      const response = await fetch(`${API_BASE_URL}/api/admin/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

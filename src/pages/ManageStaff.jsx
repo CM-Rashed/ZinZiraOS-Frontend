@@ -5,7 +5,23 @@ import {
 } from "lucide-react";
 import styles from "./ManageStaff.module.css";
 
-const API_BASE_URL = "http://127.0.0.1:8000/api/admin";
+const SERVER_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
+const API_BASE_URL = `${SERVER_BASE_URL}/api/admin/staff`;
+
+// Helper function to safely build image URLs without double slashes
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  if (
+    imagePath.startsWith("http://") ||
+    imagePath.startsWith("https://") ||
+    imagePath.startsWith("blob:") ||
+    imagePath.startsWith("data:")
+  ) {
+    return imagePath;
+  }
+  const cleanPath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+  return `${SERVER_BASE_URL}${cleanPath}`;
+};
 
 export default function ManageStaff() {
   const [staffList, setStaffList] = useState([]);
@@ -30,25 +46,32 @@ export default function ManageStaff() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const getAuthHeaders = () => {
+  const getAuthHeaders = (isFormData = false) => {
     const token = localStorage.getItem("authToken");
-    return {
-      Authorization: `Bearer ${token}`,
+    const headers = {
       Accept: "application/json",
     };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    if (!isFormData) {
+      headers["Content-Type"] = "application/json";
+    }
+    return headers;
   };
 
   const fetchStaff = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/staff`, {
+      const res = await fetch(API_BASE_URL, {
         headers: getAuthHeaders(),
       });
       if (!res.ok) throw new Error("Failed to fetch staff data");
-      const data = await res.json();
-      setStaffList(data);
+      const result = await res.json();
+      const list = Array.isArray(result) ? result : (result.data || []);
+      setStaffList(list);
     } catch (err) {
-      console.error(err);
+      console.error("Fetch Staff Error:", err);
     } finally {
       setLoading(false);
     }
@@ -72,7 +95,7 @@ export default function ManageStaff() {
         type: staff.type || "full_time",
         photo: null,
       });
-      setPhotoPreview(staff.photo ? `${API_BASE_URL.replace('/api', '')}${staff.photo}` : null);
+      setPhotoPreview(staff.photo ? getImageUrl(staff.photo) : null);
     } else {
       setEditingStaff(null);
       setFormData({
@@ -91,13 +114,20 @@ export default function ManageStaff() {
   };
 
   const handleCloseModal = () => {
+    if (photoPreview && photoPreview.startsWith("blob:")) {
+      URL.revokeObjectURL(photoPreview);
+    }
     setIsModalOpen(false);
     setEditingStaff(null);
+    setPhotoPreview(null);
   };
 
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (photoPreview && photoPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(photoPreview);
+      }
       setFormData({ ...formData, photo: file });
       setPhotoPreview(URL.createObjectURL(file));
     }
@@ -124,16 +154,16 @@ export default function ManageStaff() {
       data.append("photo", formData.photo);
     }
 
-    let url = `${API_BASE_URL}/staff`;
+    let url = API_BASE_URL;
     if (editingStaff) {
-      url = `${API_BASE_URL}/staff/${editingStaff.id}`;
+      url = `${API_BASE_URL}/${editingStaff.id}`;
       data.append("_method", "PUT");
     }
 
     try {
       const res = await fetch(url, {
         method: "POST",
-        headers: getAuthHeaders(),
+        headers: getAuthHeaders(true),
         body: data,
       });
 
@@ -155,7 +185,7 @@ export default function ManageStaff() {
     if (!window.confirm("Are you sure you want to remove this staff member?")) return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/staff/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/${id}`, {
         method: "DELETE",
         headers: getAuthHeaders(),
       });
@@ -168,8 +198,8 @@ export default function ManageStaff() {
 
   const filteredStaff = staffList.filter((item) => {
     const matchesSearch =
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.staff_number.toLowerCase().includes(searchTerm.toLowerCase());
+      (item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (item.staff_number && item.staff_number.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesFilter = filterType === "all" || item.type === filterType;
     return matchesSearch && matchesFilter;
   });
@@ -246,13 +276,16 @@ export default function ManageStaff() {
                   <div className={styles.msAvatarWrapper}>
                     {staff.photo ? (
                       <img
-                        src={`${API_BASE_URL.replace('/api', '')}${staff.photo}`}
+                        src={getImageUrl(staff.photo)}
                         alt={staff.name}
                         className={styles.msAvatarImg}
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                        }}
                       />
                     ) : (
                       <div className={styles.msAvatarPlaceholder}>
-                        {staff.name.charAt(0)}
+                        {staff.name?.charAt(0) || "U"}
                       </div>
                     )}
                     <span
@@ -289,7 +322,7 @@ export default function ManageStaff() {
                       <Shield size={14} /> Type
                     </span>
                     <span style={{ textTransform: "capitalize", color: "#e2e8f0" }}>
-                      {staff.type.replace("_", " ")}
+                      {(staff.type || "full_time").replace("_", " ")}
                     </span>
                   </div>
                   <div className={styles.msDetailRow}>
@@ -297,21 +330,21 @@ export default function ManageStaff() {
                       <DollarSign size={14} /> Salary
                     </span>
                     <span className={styles.msSalaryText}>
-                      ${Number(staff.salary).toLocaleString()}
+                      ${Number(staff.salary || 0).toLocaleString()}
                     </span>
                   </div>
                   <div className={styles.msDetailRow}>
                     <span className={styles.msDetailLabel}>
                       <Phone size={14} /> Guardian
                     </span>
-                    <span style={{ fontFamily: "monospace" }}>{staff.guardian_number}</span>
+                    <span style={{ fontFamily: "monospace" }}>{staff.guardian_number || "—"}</span>
                   </div>
                 </div>
               </div>
 
               <div className={styles.msCardFooter}>
-                <span>Age: {staff.age} yrs</span>
-                <span style={{ display: "flex", items: "center", gap: "0.25rem" }}>
+                <span>Age: {staff.age || "N/A"} yrs</span>
+                <span style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
                   <UserCheck size={12} style={{ color: "#10b981" }} /> Active
                 </span>
               </div>

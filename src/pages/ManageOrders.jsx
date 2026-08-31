@@ -12,7 +12,7 @@ export default function ManageOrders() {
   const [editingOrder, setEditingOrder] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
-
+const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   // Helper to extract stored Auth Token
   const getAuthToken = () => localStorage.getItem('authToken');
 
@@ -34,7 +34,7 @@ export default function ManageOrders() {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch('http://127.0.0.1:8000/api/admin/orders', {
+      const response = await fetch(`${SERVER_BASE_URL}/api/admin/orders`, {
         headers,
       });
       const result = await response.json();
@@ -75,7 +75,7 @@ export default function ManageOrders() {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`http://127.0.0.1:8000/api/admin/orders/${orderId}`, {
+      const response = await fetch(`${SERVER_BASE_URL}/api/admin/orders/${orderId}`, {
         method: 'DELETE',
         headers,
       });
@@ -130,7 +130,7 @@ export default function ManageOrders() {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`http://127.0.0.1:8000/api/admin/orders/${editingOrder.id}`, {
+      const response = await fetch(`${SERVER_BASE_URL}/api/admin/orders/${editingOrder.id}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(payload),

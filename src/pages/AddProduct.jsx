@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import styles from "./AddProduct.module.css";
 
-const PRODUCTS_API_URL = "http://127.0.0.1:8000/api/admin/products";
-const CATEGORIES_API_URL = "http://127.0.0.1:8000/api/admin/categories";
-// Set to server root path since files are uploaded directly to the public folder (e.g., public/uploads/products)
-const SERVER_BASE_URL = "http://127.0.0.1:8000/";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+const SERVER_BASE_URL = API_BASE_URL;
+const PRODUCTS_API_URL = `${API_BASE_URL}/api/admin/products`;
+const CATEGORIES_API_URL = `${API_BASE_URL}/api/admin/categories`;
 
 const getAuthHeaders = (isFormData = false) => {
   const token = localStorage.getItem("authToken");
@@ -16,6 +16,23 @@ const getAuthHeaders = (isFormData = false) => {
     headers["Content-Type"] = "application/json";
   }
   return headers;
+};
+
+// URL builder that prevents duplicate/missing slashes
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return "";
+  if (
+    imagePath.startsWith("http://") ||
+    imagePath.startsWith("https://") ||
+    imagePath.startsWith("blob:") ||
+    imagePath.startsWith("data:")
+  ) {
+    return imagePath;
+  }
+
+  const cleanBase = (SERVER_BASE_URL || "").replace(/\/+$/, "");
+  const cleanPath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+  return `${cleanBase}${cleanPath}`;
 };
 
 // Helper function to safely parse images array/string
@@ -90,7 +107,6 @@ export default function AddProduct() {
   }, [imagePreviews]);
 
   const handleOpenModal = (product = null) => {
-    // Reset file states & clear existing previews
     imagePreviews.forEach((url) => URL.revokeObjectURL(url));
     setImageFiles([]);
     setImagePreviews([]);
@@ -148,20 +164,17 @@ export default function AddProduct() {
       return;
     }
 
-    // Take only what fits within the 3 image limit
     const validFiles = selectedFiles.slice(0, availableSlots);
 
     if (selectedFiles.length > availableSlots) {
       alert(`Only ${availableSlots} more image(s) could be added. Maximum is 3.`);
     }
 
-    // Generate blob preview URLs for valid new files
     const newPreviews = validFiles.map((file) => URL.createObjectURL(file));
 
     setImageFiles((prevFiles) => [...prevFiles, ...validFiles]);
     setImagePreviews((prevPreviews) => [...prevPreviews, ...newPreviews]);
 
-    // Reset input value so re-selecting the same file works
     e.target.value = "";
   };
 
@@ -170,11 +183,9 @@ export default function AddProduct() {
   };
 
   const handleRemoveNewImage = (index) => {
-    // Revoke target preview URL memory
     if (imagePreviews[index]) {
       URL.revokeObjectURL(imagePreviews[index]);
     }
-
     setImageFiles((prev) => prev.filter((_, i) => i !== index));
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
@@ -183,7 +194,6 @@ export default function AddProduct() {
     e.preventDefault();
     const isEdit = Boolean(editingProduct);
 
-    // Validate 1 to 3 images rule
     const totalImages = existingImages.length + imageFiles.length;
     if (totalImages < 1) {
       alert("Please upload at least 1 image for the product.");
@@ -199,26 +209,23 @@ export default function AddProduct() {
     const data = new FormData();
     data.append("category_id", formData.category_id);
     data.append("name", formData.name);
-    if (formData.sku.trim()) data.append("sku", formData.sku.trim());
+    if (formData.sku?.trim()) data.append("sku", formData.sku.trim());
     data.append("quantity", formData.quantity);
     data.append("buying_price", formData.buying_price);
     data.append("selling_price", formData.selling_price);
     data.append("location", formData.location);
     if (formData.notes) data.append("notes", formData.notes);
 
-    // Append remaining existing images (for edit mode) using indexed keys
     existingImages.forEach((img, index) => {
       data.append(`existing_images[${index}]`, img);
     });
 
-    // Append new uploaded binary image files using explicit indexed keys
     imageFiles.forEach((file, index) => {
       data.append(`images[${index}]`, file);
     });
 
     let url = PRODUCTS_API_URL;
 
-    // Laravel requires multipart/form-data PUT requests to pass _method='PUT' over POST
     if (isEdit) {
       url = `${PRODUCTS_API_URL}/${editingProduct.id}`;
       data.append("_method", "PUT");
@@ -264,7 +271,7 @@ export default function AddProduct() {
 
   const filteredProducts = products.filter((prod) => {
     const matchesSearch =
-      prod.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      prod.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (prod.sku && prod.sku.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (prod.location && prod.location.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -352,7 +359,9 @@ export default function AddProduct() {
               </thead>
               <tbody>
                 {filteredProducts.map((prod) => {
-                  const margin = (prod.selling_price - prod.buying_price).toFixed(2);
+                  const buying = Number(prod.buying_price) || 0;
+                  const selling = Number(prod.selling_price) || 0;
+                  const margin = (selling - buying).toFixed(2);
                   const prodImages = parseProductImages(prod.images);
                   const firstImage = prodImages.length > 0 ? prodImages[0] : null;
 
@@ -362,9 +371,12 @@ export default function AddProduct() {
                         <div className={styles.thumbnailCell}>
                           {firstImage ? (
                             <img
-                              src={`${SERVER_BASE_URL}${firstImage}`}
+                              src={getImageUrl(firstImage)}
                               alt={prod.name}
                               className={styles.tableThumbnail}
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                              }}
                             />
                           ) : (
                             <div className={styles.noThumbnail}>No Img</div>
@@ -399,11 +411,11 @@ export default function AddProduct() {
                         </span>
                       </td>
                       <td className={styles.priceMono}>
-                        ${Number(prod.buying_price).toFixed(2)}
+                        ${buying.toFixed(2)}
                       </td>
                       <td>
                         <div className={styles.priceBold}>
-                          ${Number(prod.selling_price).toFixed(2)}
+                          ${selling.toFixed(2)}
                         </div>
                         <div className={styles.marginSub}>+${margin} margin</div>
                       </td>
@@ -468,7 +480,7 @@ export default function AddProduct() {
                   {existingImages.map((imgPath, index) => (
                     <div key={`existing-${index}`} className={styles.previewItem}>
                       <img
-                        src={`${SERVER_BASE_URL}${imgPath}`}
+                        src={getImageUrl(imgPath)}
                         alt="Product preview"
                         className={styles.previewImage}
                       />
@@ -628,7 +640,7 @@ export default function AddProduct() {
                     rows="3"
                     className={styles.textareaField}
                     placeholder="Add supplier details or handling notes..."
-                    value={formData.notes}
+                    value={formData.notes || ""}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   />
                 </div>
