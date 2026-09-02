@@ -283,7 +283,7 @@ export default function ManageCustomer() {
                 <tr>
                   <th>Customer Name</th>
                   <th>Phone</th>
-                  <th>Address</th>
+                  <th>Notes</th>
                   <th>Outstanding Due</th>
                   <th className={styles.textRight}>Actions</th>
                 </tr>
@@ -399,10 +399,10 @@ export default function ManageCustomer() {
               </div>
 
               <div className={styles.formGroup}>
-                <label>Address</label>
+                <label>Notes</label>
                 <textarea
-                  placeholder="Street address, city, area..."
-                  value={formData.address}
+                  placeholder="Additional notes about the customer..."
+                  value={formData.notes}
                   onChange={(e) =>
                     setFormData({ ...formData, address: e.target.value })
                   }

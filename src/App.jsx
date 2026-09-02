@@ -17,6 +17,7 @@ import Configurations from "./pages/Configurations";
 import AdminSettings from "./pages/AdminSettings";
 import AddProduct from "./pages/AddProduct";
 import ManageCustomer from "./pages/ManageCustomer";
+import ReportsDashboard from "./pages/ReportsDashboard";
 import "./App.css";
 
 export default function App() {
@@ -110,6 +111,7 @@ export default function App() {
                   <Route path="instant-orders" element={<InstantOrders />} />
                   <Route path="manage-inventory" element={<Inventory />} />
                   <Route path="manage-orders" element={<ManageOrders />} />
+                  <Route path="manage-reports" element={<ReportsDashboard />} />
                   <Route path="manage-staff" element={<ManageStaff />} />
                   <Route path="manage-category" element={<ManageCategory />} />
                   <Route path="website-settings" element={<WebsiteSettings />} />

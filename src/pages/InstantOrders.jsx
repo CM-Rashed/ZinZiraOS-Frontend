@@ -71,7 +71,6 @@ export default function InstantOrders() {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      // Fixed endpoint here:
       const response = await fetch(`${SERVER_BASE_URL}/api/admin/products`, { headers });
       const result = await response.json();
 
@@ -222,8 +221,80 @@ export default function InstantOrders() {
     }
   };
 
+  const handleTriggerPrint = () => {
+    window.print();
+  };
+
   return (
     <div className="tauri-app-wrapper">
+      {/* -------------------------------------------------------------------
+          RESPONSIVE PRINT DOCUMENT CONTAINER 
+          (Hidden on screen, rendered cleanly on print)
+         ------------------------------------------------------------------- */}
+      {completedOrder && (
+        <div className="print-only-invoice">
+          <header className="print-header">
+            <div>
+              <h1 className="print-brand-title">ZINZIRA OS</h1>
+              <p className="print-brand-subtitle">Official Transaction Invoice</p>
+            </div>
+            <div className="print-meta-box">
+              <div><strong>Invoice #:</strong> {completedOrder.order_number || `#ORD-${completedOrder.id}`}</div>
+              <div><strong>Date:</strong> {new Date(completedOrder.created_at || Date.now()).toLocaleDateString()}</div>
+              <div><strong>Status:</strong> PAID IN FULL</div>
+            </div>
+          </header>
+
+          <div className="print-customer-bar">
+            <span><strong>Customer Type:</strong> Counter Sale</span>
+            <span><strong>Total Items:</strong> {completedOrder.total_quantity}</span>
+          </div>
+
+          <table className="print-invoice-table">
+            <thead>
+              <tr>
+                <th>Item Description</th>
+                <th>Sell By</th>
+                <th className="text-right">Unit Price</th>
+                <th className="text-right">Qty</th>
+                <th className="text-right">Disc</th>
+                <th className="text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {completedOrder.items?.map((item, idx) => (
+                <tr key={idx}>
+                  <td>
+                    <strong>{item.products_name}</strong>
+                    <div className="print-item-sub">ID: #{item.product_id}</div>
+                  </td>
+                  <td>{item.sell_by || 'admin'}</td>
+                  <td className="text-right">${parseFloat(item.products_price || 0).toFixed(2)}</td>
+                  <td className="text-right">{item.products_quantity}</td>
+                  <td className="text-right">${(parseFloat(item.products_discount || 0) * item.products_quantity).toFixed(2)}</td>
+                  <td className="text-right font-bold">${parseFloat(item.products_total_price || 0).toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="print-total-container">
+            <div className="print-total-card">
+              <span className="print-total-label">Grand Total Paid</span>
+              <span className="print-total-amount">${parseFloat(completedOrder.total_price || 0).toFixed(2)}</span>
+            </div>
+          </div>
+
+          <footer className="print-footer">
+            <span>Thank you for your business! • ZinziraOS Enterprise</span>
+            <span>System Generated Receipt</span>
+          </footer>
+        </div>
+      )}
+
+      {/* -------------------------------------------------------------------
+          SCREEN VIEW LAYOUT
+         ------------------------------------------------------------------- */}
       {viewMode === 'pos' ? (
         <div className="pos-viewport">
           <header className="top-nav">
@@ -434,7 +505,7 @@ export default function InstantOrders() {
             <button className="btn-secondary" onClick={() => setViewMode('pos')}>
               ← Return to Terminal
             </button>
-            <button className="btn-primary" onClick={() => window.print()}>
+            <button className="btn-primary" onClick={handleTriggerPrint}>
               🖨️ Print / Save PDF
             </button>
           </div>

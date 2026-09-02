@@ -21,6 +21,7 @@ export default function Sidebar() {
         { path: "/manage-shop", label: "Manage Shop", icon: "🏪" },
         { path: "/manage-staff", label: "Manage Staff", icon: "👥" },
         { path: "/manage-category", label: "Manage Category", icon: "🏷️" },
+        { path: "/manage-reports", label: "Manage Reports", icon: "📈" },
       ]
     },
     {

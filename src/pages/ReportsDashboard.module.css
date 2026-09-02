@@ -1,0 +1,1584 @@
+/* Container & Native UI Setup */
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #0b0d11;
+  color: #f3f4f6;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', Roboto, sans-serif;
+  user-select: none;
+  overflow: hidden;
+}
+
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: rgba(18, 22, 31, 0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.titleGroup h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.subtitle {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: #8b949e;
+}
+
+.filterControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Tabs & Select Elements */
+.typeTabs {
+  display: flex;
+  background: #141822;
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tabBtn {
+  background: transparent;
+  border: none;
+  color: #8b949e;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tabBtnActive {
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+}
+
+.selectInput {
+  background: #141822;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f3f4f6;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Popover Wrapper & Trigger Button */
+.popoverWrapper {
+  position: relative;
+}
+
+.datePickerTrigger {
+  background: #141822;
+  border: 1px solid #2563eb;
+  color: #60a5fa;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.datePickerTrigger:hover {
+  background: rgba(37, 99, 235, 0.15);
+}
+
+/* Calendar Popover */
+.calendarPopover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 280px;
+  background: #121620;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+  z-index: 999;
+}
+
+.popoverHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 0.88rem;
+  margin-bottom: 12px;
+}
+
+.popoverHeader button {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.popoverHeader button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.weekHeader {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.daysGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.emptyDayCell {
+  height: 32px;
+}
+
+.dayCell {
+  height: 32px;
+  background: transparent;
+  border: none;
+  color: #d1d5db;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.dayCell:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.daySelected {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  border-radius: 6px;
+}
+
+.dayInRange {
+  background: rgba(37, 99, 235, 0.2) !important;
+  color: #93c5fd !important;
+  border-radius: 0;
+}
+
+.popoverFooter {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cancelBtn {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.applyBtn {
+  background: #2563eb;
+  border: none;
+  color: #ffffff;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.applyBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Action Buttons */
+.refreshBtn, .printBtn {
+  background: #141822;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f3f4f6;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.printBtn {
+  background: #059669;
+  border-color: #10b981;
+  color: #ffffff;
+}
+
+.printBtn:hover {
+  background: #10b981;
+}
+
+/* Dashboard Metrics & Table */
+.mainContent {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.metricCard {
+  background: #121620;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.metricLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #8b949e;
+}
+
+.metricValue {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.textRevenue { color: #10b981; }
+.textCost { color: #ef4444; }
+.textNetPos { color: #3b82f6; }
+.textNetNeg { color: #f59e0b; }
+
+.metricSub {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.tableCard {
+  background: #121620;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tableHeader {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tableHeader h2 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.badge {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tableWrapper {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.reportTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.reportTable th {
+  background: #161b26;
+  color: #8b949e;
+  padding: 12px 20px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  position: sticky;
+  top: 0;
+}
+
+.reportTable td {
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.textRight { text-align: right; }
+
+.pill {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.pillRevenue { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+.pillCost { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+.loadingState, .emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  color: #6b7280;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.alertError {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+}
+
+/* Hide Print Document in Normal Screen View */
+.printOnlyDocument {
+  display: none;
+}
+
+/* -------------------------------------------------------------------------
+   A4 PRINT-ONLY MEDIA ENGINE
+   ------------------------------------------------------------------------- */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm;
+  }
+
+  /* Reset layout structure for printer context */
+  html, body, .container {
+    background: #ffffff !important;
+    color: #000000 !important;
+    height: auto !important;
+    overflow: visible !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+  }
+
+  /* Completely eliminate dark app UI elements */
+  .hideOnPrint {
+    display: none !important;
+  }
+
+  /* Display clean A4 document layout */
+  .printOnlyDocument {
+    display: block !important;
+    width: 100% !important;
+    color: #000000 !important;
+  }
+
+  .printHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #111827;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+  }
+
+  .printCompanyTitle {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #111827;
+  }
+
+  .printSubHeader {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    color: #4b5563;
+  }
+
+  .printMetaBlock {
+    text-align: right;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: #374151;
+  }
+
+  .printSummaryGrid {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .printSummaryBox {
+    flex: 1;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 12px;
+    background: #f9fafb;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .printSummaryLabel {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #4b5563;
+  }
+
+  .printSummaryVal {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #111827;
+    margin-top: 4px;
+  }
+
+  .printTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin-top: 10px;
+  }
+
+  .printTable th {
+    background-color: #f3f4f6 !important;
+    color: #111827 !important;
+    border-bottom: 2px solid #9ca3af;
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .printTable td {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 8px 10px;
+    color: #1f2937;
+  }
+
+  /* Prevent page breaks inside rows */
+  .printTable tr {
+    page-break-inside: avoid;
+  }
+
+  .printFooter {
+    margin-top: 30px;
+    padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: #6b7280;
+  }
+}
+/* -------------------------------------------------------------------------
+   GLOBAL A4 PRINT-ONLY OVERRIDES
+   ------------------------------------------------------------------------- */
+@media print {
+  /* 1. Force the viewport and body to reset completely */
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm;
+  }
+
+  /* 2. Hide EVERYTHING on the screen by default */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* 3. Force body and html to be clean white, removing app wrapper backgrounds */
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    height: auto !important;
+    min-height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* 4. Target ONLY the print document, make it visible, and position it at the top-left */
+  .printOnlyDocument,
+  .printOnlyDocument * {
+    visibility: visible !important;
+  }
+
+  .printOnlyDocument {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* 5. Document Styling */
+  .printHeader {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    border-bottom: 2px solid #111827 !important;
+    padding-bottom: 12px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .printCompanyTitle {
+    margin: 0 !important;
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    color: #111827 !important;
+  }
+
+  .printSubHeader {
+    margin: 4px 0 0 !important;
+    font-size: 0.85rem !important;
+    color: #4b5563 !important;
+  }
+
+  .printMetaBlock {
+    text-align: right !important;
+    font-size: 0.8rem !important;
+    line-height: 1.5 !important;
+    color: #374151 !important;
+  }
+
+  .printSummaryGrid {
+    display: flex !important;
+    gap: 16px !important;
+    margin-bottom: 24px !important;
+  }
+
+  .printSummaryBox {
+    flex: 1 !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    padding: 12px !important;
+    background: #f9fafb !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .printSummaryLabel {
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    color: #4b5563 !important;
+  }
+
+  .printSummaryVal {
+    font-size: 1.3rem !important;
+    font-weight: 800 !important;
+    color: #111827 !important;
+    margin-top: 4px !important;
+  }
+
+  .printTable {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 0.82rem !important;
+    margin-top: 10px !important;
+  }
+
+  .printTable th {
+    background-color: #f3f4f6 !important;
+    color: #111827 !important;
+    border-bottom: 2px solid #9ca3af !important;
+    padding: 8px 10px !important;
+    text-align: left !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+  }
+
+  .printTable td {
+    border-bottom: 1px solid #e5e7eb !important;
+    padding: 8px 10px !important;
+    color: #1f2937 !important;
+  }
+
+  .printTable tr {
+    page-break-inside: avoid !important;
+  }
+
+  .printFooter {
+    margin-top: 30px !important;
+    padding-top: 12px !important;
+    border-top: 1px solid #e5e7eb !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    font-size: 0.72rem !important;
+    color: #6b7280 !important;
+  }
+}/* -------------------------------------------------------------------------
+   A4 PERFECT FIT PRINT ENGINE (NO CUTOFFS)
+   ------------------------------------------------------------------------- */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm;
+  }
+
+  /* Reset global box sizing & hide non-printable UI */
+  *, *::before, *::after {
+    box-sizing: border-box !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Force print container to span precisely across A4 width */
+  .printOnlyDocument,
+  .printOnlyDocument * {
+    visibility: visible !important;
+  }
+
+  .printOnlyDocument {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 186mm !important; /* Standard A4 printable width (210mm - 24mm margins) */
+    margin: 0 auto !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* Document Header */
+  .printHeader {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    border-bottom: 2px solid #111827 !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 16px !important;
+    width: 100% !important;
+  }
+
+  .printCompanyTitle {
+    margin: 0 !important;
+    font-size: 1.35rem !important;
+    font-weight: 800 !important;
+    color: #111827 !important;
+  }
+
+  .printSubHeader {
+    margin: 3px 0 0 !important;
+    font-size: 0.8rem !important;
+    color: #4b5563 !important;
+  }
+
+  .printMetaBlock {
+    text-align: right !important;
+    font-size: 0.75rem !important;
+    line-height: 1.4 !important;
+    color: #374151 !important;
+    white-space: nowrap !important;
+  }
+
+  /* Summary Metrics Cards */
+  .printSummaryGrid {
+    display: flex !important;
+    gap: 12px !important;
+    margin-bottom: 16px !important;
+    width: 100% !important;
+  }
+
+  .printSummaryBox {
+    flex: 1 !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    padding: 10px 12px !important;
+    background: #f9fafb !important;
+  }
+
+  .printSummaryLabel {
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    color: #4b5563 !important;
+  }
+
+  .printSummaryVal {
+    font-size: 1.2rem !important;
+    font-weight: 800 !important;
+    color: #111827 !important;
+    margin-top: 2px !important;
+    display: block !important;
+  }
+
+  /* Table Control & Cell Widths (Prevents Right-Edge Clipping) */
+  .printTable {
+    width: 100% !important;
+    table-layout: fixed !important; /* Strictly forces cells to stay inside page width */
+    border-collapse: collapse !important;
+    font-size: 0.78rem !important;
+    margin-top: 8px !important;
+  }
+
+  .printTable th {
+    background-color: #f3f4f6 !important;
+    color: #111827 !important;
+    border-bottom: 2px solid #9ca3af !important;
+    padding: 6px 8px !important;
+    font-size: 0.7rem !important;
+    text-transform: uppercase !important;
+  }
+
+  .printTable td {
+    border-bottom: 1px solid #e5e7eb !important;
+    padding: 6px 8px !important;
+    color: #1f2937 !important;
+    word-wrap: break-word !important; /* Wraps long order IDs/descriptions onto new lines */
+    overflow-wrap: break-word !important;
+  }
+
+  /* Column Width Distributions */
+  .printTable th:nth-child(1), .printTable td:nth-child(1) { width: 8%; }  /* ENTRY ID */
+  .printTable th:nth-child(2), .printTable td:nth-child(2) { width: 10%; } /* TYPE */
+  .printTable th:nth-child(3), .printTable td:nth-child(3) { width: 20%; } /* CATEGORY */
+  .printTable th:nth-child(4), .printTable td:nth-child(4) { width: 34%; } /* DESCRIPTION */
+  .printTable th:nth-child(5), .printTable td:nth-child(5) { width: 16%; } /* TIMESTAMP */
+  .printTable th:nth-child(6), .printTable td:nth-child(6) { width: 12%; text-align: right !important; } /* AMOUNT */
+
+  .printTable tr {
+    page-break-inside: avoid !important;
+  }
+
+  /* Footer */
+  .printFooter {
+    margin-top: 24px !important;
+    padding-top: 10px !important;
+    border-top: 1px solid #e5e7eb !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    font-size: 0.7rem !important;
+    color: #6b7280 !important;
+    width: 100% !important;
+  }
+}
+/* -------------------------------------------------------------------------
+   FLUID FULL-WIDTH RESPONSIVE PRINT ENGINE (A4 / Letter / Dynamic PDF)
+   ------------------------------------------------------------------------- */
+@media print {
+  /* 1. Define page margins dynamically at the paper edge */
+  @page {
+    size: auto; /* Dynamically adjusts to standard A4, Letter, or custom printer settings */
+    margin: 15mm 15mm 15mm 15mm; /* Clean uniform border padding */
+  }
+
+  /* 2. Global box model & layout reset */
+  *, *::before, *::after {
+    box-sizing: border-box !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 3. Hide all dark web app UI components */
+  body * {
+    visibility: hidden !important;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* 4. Display print document container spanning 100% fluid width */
+  .printOnlyDocument,
+  .printOnlyDocument * {
+    visibility: visible !important;
+  }
+
+  .printOnlyDocument {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important; /* Spans 100% of printable area across any page size */
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* 5. Fluid Responsive Header */
+  .printHeader {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    border-bottom: 2px solid #111827 !important;
+    padding-bottom: 12px !important;
+    margin-bottom: 20px !important;
+    width: 100% !important;
+  }
+
+  .printCompanyTitle {
+    margin: 0 !important;
+    font-size: 1.6rem !important;
+    font-weight: 800 !important;
+    color: #111827 !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  .printSubHeader {
+    margin: 4px 0 0 !important;
+    font-size: 0.85rem !important;
+    color: #4b5563 !important;
+  }
+
+  .printMetaBlock {
+    text-align: right !important;
+    font-size: 0.8rem !important;
+    line-height: 1.5 !important;
+    color: #374151 !important;
+    white-space: nowrap !important;
+  }
+
+  /* 6. Fluid Summary Grid (Scales with available paper width) */
+  .printSummaryGrid {
+    display: flex !important;
+    width: 100% !important;
+    gap: 16px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .printSummaryBox {
+    flex: 1 1 0% !important; /* Equal fluid distribution */
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    padding: 12px 16px !important;
+    background: #f9fafb !important;
+  }
+
+  .printSummaryLabel {
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    color: #4b5563 !important;
+  }
+
+  .printSummaryVal {
+    font-size: 1.4rem !important;
+    font-weight: 800 !important;
+    color: #111827 !important;
+    margin-top: 4px !important;
+    display: block !important;
+  }
+
+  /* 7. Fully Fluid Table Engine (Percentage Proportions & Text Wrapping) */
+  .printTable {
+    width: 100% !important;
+    table-layout: fixed !important; /* Enforces cell width percentages across full page width */
+    border-collapse: collapse !important;
+    font-size: 0.82rem !important;
+    margin-top: 10px !important;
+  }
+
+  .printTable th {
+    background-color: #f3f4f6 !important;
+    color: #111827 !important;
+    border-bottom: 2px solid #9ca3af !important;
+    padding: 8px 10px !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.03em !important;
+  }
+
+  .printTable td {
+    border-bottom: 1px solid #e5e7eb !important;
+    padding: 8px 10px !important;
+    color: #1f2937 !important;
+    word-break: break-word !important; /* Prevents overflow clipping */
+    overflow-wrap: anywhere !important;
+  }
+
+  /* Percentage Column Width Allocation (Totals 100%) */
+  .printTable th:nth-child(1), .printTable td:nth-child(1) { width: 10%; } /* Entry ID */
+  .printTable th:nth-child(2), .printTable td:nth-child(2) { width: 12%; } /* Type */
+  .printTable th:nth-child(3), .printTable td:nth-child(3) { width: 18%; } /* Category */
+  .printTable th:nth-child(4), .printTable td:nth-child(4) { width: 34%; } /* Description */
+  .printTable th:nth-child(5), .printTable td:nth-child(5) { width: 14%; } /* Timestamp */
+  .printTable th:nth-child(6), .printTable td:nth-child(6) { width: 12%; text-align: right !important; } /* Amount */
+
+  .printTable tr {
+    page-break-inside: avoid !important;
+  }
+
+  /* 8. Responsive Footer */
+  .printFooter {
+    margin-top: 28px !important;
+    padding-top: 12px !important;
+    border-top: 1px solid #e5e7eb !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    font-size: 0.72rem !important;
+    color: #6b7280 !important;
+    width: 100% !important;
+  }
+}
+
+/* ==========================================================================
+   EXECUTIVE DASHBOARD CONTAINER & TYPOGRAPHY
+   ========================================================================== */
+.container {
+  min-height: 100vh;
+  background-color: #0b0f19;
+  color: #f1f5f9;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   TOP BAR & CONTROLS
+   ========================================================================== */
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.titleGroup h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  margin: 4px 0 0 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.filterControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.typeTabs {
+  display: flex;
+  background: #1e293b;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+}
+
+.tabBtn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tabBtnHover:hover {
+  color: #f8fafc;
+}
+
+.tabBtnActive {
+  background: #2563eb;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+}
+
+.selectInput {
+  background: #1e293b;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+}
+
+.selectInput:focus {
+  border-color: #3b82f6;
+}
+
+/* Action Buttons */
+.refreshBtn, .printBtn, .datePickerTrigger {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #f8fafc;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.refreshBtn:hover, .datePickerTrigger:hover {
+  background: #334155;
+  border-color: #475569;
+}
+
+.printBtn {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.printBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+}
+
+/* Custom Calendar Popover */
+.popoverWrapper {
+  position: relative;
+}
+
+.calendarPopover {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  z-index: 50;
+  width: 280px;
+}
+
+.popoverHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.popoverHeader button {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.weekHeader {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.daysGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.dayCell {
+  aspect-ratio: 1;
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dayCell:hover {
+  background: #334155;
+}
+
+.daySelected {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+.dayInRange {
+  background: rgba(37, 99, 235, 0.2) !important;
+  color: #60a5fa !important;
+}
+
+.emptyDayCell {
+  aspect-ratio: 1;
+}
+
+.popoverFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid #334155;
+}
+
+.cancelBtn, .applyBtn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+.cancelBtn {
+  background: #334155;
+  color: #cbd5e1;
+}
+
+.applyBtn {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.applyBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   FINANCIAL METRIC CARDS
+   ========================================================================== */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.metricCard {
+  background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid #334155;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.metricCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+}
+
+.metricLabel {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+
+.metricValue {
+  font-size: 2.1rem;
+  font-weight: 800;
+  margin: 10px 0 4px 0;
+  letter-spacing: -0.03em;
+}
+
+.metricSub {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.textRevenue { color: #10b981; }
+.textCost { color: #f43f5e; }
+.textNetPos { color: #38bdf8; }
+.textNetNeg { color: #fb7185; }
+
+/* ==========================================================================
+   HIGH-END HIGH-CONTRAST SCREEN TABLE
+   ========================================================================== */
+.tableCard {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 16px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.tableHeader {
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #334155;
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.tableHeader h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.badge {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.reportTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+  font-size: 0.88rem;
+}
+
+.reportTable th {
+  background: #0f172a;
+  color: #64748b;
+  padding: 14px 24px;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid #334155;
+}
+
+.reportTable td {
+  padding: 16px 24px;
+  color: #cbd5e1;
+  border-bottom: 1px solid #1e293b;
+  transition: background 0.15s ease;
+}
+
+.reportTable tbody tr {
+  background-color: #1a2332;
+}
+
+.reportTable tbody tr:nth-child(even) {
+  background-color: #141c28;
+}
+
+.reportTable tbody tr:hover td {
+  background-color: #243044 !important;
+  color: #ffffff;
+}
+
+.textRight {
+  text-align: right;
+}
+
+/* Category & Type Pills */
+.pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pillRevenue {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.pillCost {
+  background: rgba(244, 63, 94, 0.12);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.25);
+}
+
+/* Load & Empty States */
+.loadingState, .emptyState {
+  padding: 60px 20px;
+  text-align: center;
+  color: #64748b;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #334155;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.alertError {
+  background: rgba(244, 63, 94, 0.1);
+  border: 1px solid #f43f5e;
+  color: #fb7185;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 0.88rem;
+}
+
+/* ==========================================================================
+   FULL-WIDTH RESPONSIVE EXECUTIVE PRINT STYLES
+   ========================================================================== */
+.printOnlyDocument {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: auto;
+    margin: 12mm 15mm;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .hideOnPrint {
+    display: none !important;
+  }
+
+  html, body, .container {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .printOnlyDocument,
+  .printOnlyDocument * {
+    visibility: visible !important;
+  }
+
+  .printOnlyDocument {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    color: #0f172a !important;
+  }
+
+  .printHeader {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    border-bottom: 3px solid #2563eb !important;
+    padding-bottom: 12px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .printCompanyTitle {
+    margin: 0 !important;
+    font-size: 1.6rem !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+  }
+
+  .printSubHeader {
+    margin: 4px 0 0 0 !important;
+    font-size: 0.8rem !important;
+    color: #2563eb !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+  }
+
+  .printMetaBlock {
+    text-align: right !important;
+    font-size: 0.78rem !important;
+    line-height: 1.5 !important;
+    color: #475569 !important;
+    background: #f8fafc !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    border-left: 3px solid #2563eb !important;
+  }
+
+  .printSummaryGrid {
+    display: flex !important;
+    gap: 12px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .printSummaryBox {
+    flex: 1 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    padding: 10px 14px !important;
+    background: #f8fafc !important;
+  }
+
+  .printSummaryLabel {
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    color: #64748b !important;
+    display: block !important;
+  }
+
+  .printSummaryVal {
+    font-size: 1.3rem !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+    margin-top: 4px !important;
+    display: block !important;
+  }
+
+  .printTable {
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    font-size: 0.8rem !important;
+  }
+
+  .printTable th {
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+    padding: 10px 12px !important;
+    font-size: 0.72rem !important;
+    text-transform: uppercase !important;
+    text-align: left !important;
+  }
+
+  .printTable td {
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 8px 12px !important;
+    color: #334155 !important;
+    word-break: break-word !important;
+  }
+
+  .printTable tr:nth-child(even) td {
+    background-color: #f8fafc !important;
+  }
+
+  .printFooter {
+    margin-top: 32px !important;
+    padding-top: 12px !important;
+    border-top: 2px dashed #cbd5e1 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    font-size: 0.72rem !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+  }
+}

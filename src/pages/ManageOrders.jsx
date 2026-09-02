@@ -5,42 +5,42 @@ export default function ManageOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(''); // YYYY-MM-DD
+  const [selectedStatus, setSelectedStatus] = useState(''); // 'pending' | 'confirm' | 'cancel'
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Modals state
+  // Modals, Action state, and Individual Print State
   const [viewingOrder, setViewingOrder] = useState(null);
   const [editingOrder, setEditingOrder] = useState(null);
+  const [singlePrintOrder, setSinglePrintOrder] = useState(null);
+  const [updatingStatusId, setUpdatingStatusId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
-const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-  // Helper to extract stored Auth Token
+
+  const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
   const getAuthToken = () => localStorage.getItem('authToken');
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [selectedStatus]);
 
-  // Fetch paginated order history from API
   const fetchOrders = async () => {
     setLoading(true);
     setFeedback({ type: '', message: '' });
     try {
       const token = getAuthToken();
-      const headers = {
-        Accept: 'application/json',
-      };
+      const headers = { Accept: 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+      let url = `${SERVER_BASE_URL}/api/admin/orders`;
+      if (selectedStatus) {
+        url += `?status=${selectedStatus}`;
       }
 
-      const response = await fetch(`${SERVER_BASE_URL}/api/admin/orders`, {
-        headers,
-      });
+      const response = await fetch(url, { headers });
       const result = await response.json();
 
       if (response.ok && result.status === 'success') {
-        // Handle Laravel pagination response (result.data.data) or simple array (result.data)
         const list = Array.isArray(result.data) ? result.data : result.data?.data || [];
         setOrders(list);
       } else {
@@ -59,21 +59,66 @@ const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     setTimeout(() => setFeedback({ type: '', message: '' }), 4000);
   };
 
-  // DELETE Order - maps to destroy()
-  const handleDeleteOrder = async (orderId) => {
-    if (!window.confirm(`Are you sure you want to permanently delete order #${orderId}?`)) {
-      return;
-    }
+  // Bulk Print (All Filtered Orders)
+  const handlePrintAll = () => {
+    setSinglePrintOrder(null);
+    setTimeout(() => window.print(), 100);
+  };
 
+  // Individual Order Print Invoice Trigger
+  const handlePrintSingleOrder = (order) => {
+    setSinglePrintOrder(order);
+    setTimeout(() => {
+      window.print();
+    }, 150);
+  };
+
+  // UPDATE ORDER STATUS DIRECTLY
+  const handleStatusChange = async (orderId, newStatus) => {
+    setUpdatingStatusId(orderId);
     try {
       const token = getAuthToken();
       const headers = {
+        'Content-Type': 'application/json',
         Accept: 'application/json',
       };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+      const response = await fetch(`${SERVER_BASE_URL}/api/admin/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ order_status: newStatus }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 'success') {
+        setOrders((prev) =>
+          prev.map((o) => (o.id === orderId ? { ...o, order_status: newStatus } : o))
+        );
+        showFeedback(
+          'success', 
+          `Order #${orderId} status set to '${newStatus.toUpperCase()}'. ${newStatus === 'confirm' ? 'Revenue recorded in reports.' : 'Revenue removed from reports.'}`
+        );
+      } else {
+        showFeedback('error', result.message || 'Failed to update order status.');
       }
+    } catch (error) {
+      console.error('Status Update Error:', error);
+      showFeedback('error', 'Network error while updating status.');
+    } finally {
+      setUpdatingStatusId(null);
+    }
+  };
+
+  // DELETE Order
+  const handleDeleteOrder = async (orderId) => {
+    if (!window.confirm(`Are you sure you want to permanently delete order #${orderId}?`)) return;
+
+    try {
+      const token = getAuthToken();
+      const headers = { Accept: 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
 
       const response = await fetch(`${SERVER_BASE_URL}/api/admin/orders/${orderId}`, {
         method: 'DELETE',
@@ -94,12 +139,11 @@ const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     }
   };
 
-  // UPDATE Order - maps to update()
+  // UPDATE Order
   const handleUpdateOrder = async () => {
     if (!editingOrder || !editingOrder.items || editingOrder.items.length === 0) return;
     setIsSubmitting(true);
 
-    // Format items to ensure correct numeric structure expected by validateOrder()
     const formattedItems = editingOrder.items.map((item) => {
       const price = parseFloat(item.products_price) || 0;
       const qty = parseInt(item.products_quantity) || 1;
@@ -117,7 +161,10 @@ const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
       };
     });
 
-    const payload = { items: formattedItems };
+    const payload = { 
+      items: formattedItems,
+      order_status: editingOrder.order_status || 'pending'
+    };
 
     try {
       const token = getAuthToken();
@@ -125,10 +172,7 @@ const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
         'Content-Type': 'application/json',
         Accept: 'application/json',
       };
-
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
+      if (token) headers['Authorization'] = `Bearer ${token}`;
 
       const response = await fetch(`${SERVER_BASE_URL}/api/admin/orders/${editingOrder.id}`, {
         method: 'PUT',
@@ -139,7 +183,6 @@ const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
       const result = await response.json();
 
       if (response.ok && result.status === 'success') {
-        // Replace in local state
         setOrders((prev) =>
           prev.map((o) => (o.id === editingOrder.id ? result.data : o))
         );
@@ -156,7 +199,7 @@ const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     }
   };
 
-  // Filter orders by date calendar picker and search keyword
+  // Filter orders by date & search input
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
       const createdDate = new Date(order.created_at).toISOString().split('T')[0];
@@ -170,17 +213,17 @@ const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     });
   }, [orders, selectedDate, searchQuery]);
 
-  // Aggregate stats metrics for filtered selection
+  // Aggregate stats metrics
   const aggregatedStats = useMemo(() => {
     const count = filteredOrders.length;
-    const revenue = filteredOrders.reduce((acc, o) => acc + parseFloat(o.total_price || 0), 0);
+    const confirmedOrders = filteredOrders.filter(o => o.order_status === 'confirm');
+    const revenue = confirmedOrders.reduce((acc, o) => acc + parseFloat(o.total_price || 0), 0);
+    const pendingCount = filteredOrders.filter(o => o.order_status === 'pending' || !o.order_status).length;
     const totalQty = filteredOrders.reduce((acc, o) => acc + parseInt(o.total_quantity || 0), 0);
-    const totalDiscount = filteredOrders.reduce((acc, o) => acc + parseFloat(o.total_discount || 0), 0);
 
-    return { count, revenue, totalQty, totalDiscount };
+    return { count, revenue, pendingCount, totalQty };
   }, [filteredOrders]);
 
-  // Handle item change in edit modal
   const handleEditItemChange = (index, field, value) => {
     const updatedItems = [...editingOrder.items];
     updatedItems[index] = {
@@ -190,16 +233,189 @@ const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     setEditingOrder({ ...editingOrder, items: updatedItems });
   };
 
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'confirm': return 'status-badge status-confirm';
+      case 'cancel':  return 'status-badge status-cancel';
+      default:        return 'status-badge status-pending';
+    }
+  };
+
   return (
     <div className="manage-orders-container">
-      {/* Top Header & Calendar Date Bar */}
+      
+      {/* -------------------------------------------------------------------
+          PRINT ENGINE CONTAINER 
+          (Dynamically switches between Single Invoice & Bulk Table)
+         ------------------------------------------------------------------- */}
+      <div className="printOnlyDocument">
+        {singlePrintOrder ? (
+          /* INDIVIDUAL ORDER INVOICE PRINT LAYOUT */
+          <div className="invoice-print-container">
+            <div className="printHeader">
+              <div>
+                <h1 className="printCompanyTitle">OFFICIAL ORDER INVOICE</h1>
+                <p className="printSubHeader">ZinziraOS Enterprise Systems</p>
+              </div>
+              <div className="printMetaBlock">
+                <div><strong>Invoice Ref:</strong> {singlePrintOrder.order_number || `#ORD-${singlePrintOrder.id}`}</div>
+                <div><strong>System Order ID:</strong> #{singlePrintOrder.id}</div>
+                <div><strong>Status:</strong> {(singlePrintOrder.order_status || 'pending').toUpperCase()}</div>
+                <div><strong>Date:</strong> {new Date(singlePrintOrder.created_at).toLocaleString()}</div>
+              </div>
+            </div>
+
+            <div className="invoice-customer-bar">
+              <div><strong>Payment Type:</strong> Store Ledger</div>
+              <div><strong>Total Items:</strong> {singlePrintOrder.total_quantity}</div>
+            </div>
+
+            <table className="printTable invoiceTable">
+              <thead>
+                <tr>
+                  <th>Item / Product Name</th>
+                  <th>Sell By</th>
+                  <th style={{ textAlign: 'right' }}>Unit Price</th>
+                  <th style={{ textAlign: 'right' }}>Discount</th>
+                  <th style={{ textAlign: 'right' }}>Qty</th>
+                  <th style={{ textAlign: 'right' }}>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {singlePrintOrder.items?.map((item, idx) => (
+                  <tr key={idx}>
+                    <td>
+                      <strong>{item.products_name}</strong>
+                      <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>Product ID: #{item.product_id}</div>
+                    </td>
+                    <td>{item.sell_by || 'admin'}</td>
+                    <td style={{ textAlign: 'right' }}>${parseFloat(item.products_price || 0).toFixed(2)}</td>
+                    <td style={{ textAlign: 'right' }}>${parseFloat(item.products_discount || 0).toFixed(2)}</td>
+                    <td style={{ textAlign: 'right' }}>{item.products_quantity}</td>
+                    <td style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                      ${parseFloat(item.products_total_price || 0).toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="invoice-total-summary">
+              <div className="total-box">
+                <span className="total-label">Grand Total:</span>
+                <span className="total-amount">${parseFloat(singlePrintOrder.total_price || 0).toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div className="printFooter">
+              <span>Thank you for your business! • Official Sales Receipt</span>
+              <span>ZinziraOS Enterprise Audit System</span>
+            </div>
+          </div>
+        ) : (
+          /* BULK SUMMARY LIST PRINT LAYOUT */
+          <div>
+            <div className="printHeader">
+              <div>
+                <h1 className="printCompanyTitle">ORDER MANAGEMENT STATEMENT</h1>
+                <p className="printSubHeader">Generated via Executive Management Console</p>
+              </div>
+              <div className="printMetaBlock">
+                <div><strong>Filter Status:</strong> {selectedStatus ? selectedStatus.toUpperCase() : 'ALL STATUSES'}</div>
+                <div><strong>Filter Date:</strong> {selectedDate || 'ALL TIME'}</div>
+                <div><strong>Generated:</strong> {new Date().toLocaleString()}</div>
+              </div>
+            </div>
+
+            <div className="printSummaryGrid">
+              <div className="printSummaryBox">
+                <span className="printSummaryLabel">Total Orders</span>
+                <span className="printSummaryVal">{aggregatedStats.count}</span>
+              </div>
+              <div className="printSummaryBox">
+                <span className="printSummaryLabel">Confirmed Revenue</span>
+                <span className="printSummaryVal">${aggregatedStats.revenue.toFixed(2)}</span>
+              </div>
+              <div className="printSummaryBox">
+                <span className="printSummaryLabel">Pending Approval</span>
+                <span className="printSummaryVal">{aggregatedStats.pendingCount}</span>
+              </div>
+              <div className="printSummaryBox">
+                <span className="printSummaryLabel">Items Sold</span>
+                <span className="printSummaryVal">{aggregatedStats.totalQty}</span>
+              </div>
+            </div>
+
+            <table className="printTable">
+              <thead>
+                <tr>
+                  <th>Order Ref</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Items Included</th>
+                  <th style={{ textAlign: 'right' }}>Total Qty</th>
+                  <th style={{ textAlign: 'right' }}>Total Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredOrders.map((order) => (
+                  <tr key={order.id}>
+                    <td>
+                      <strong>{order.order_number || `ORD-#${order.id}`}</strong>
+                      <br />
+                      <span style={{ fontSize: '0.7rem', color: '#6b7280' }}>ID: #{order.id}</span>
+                    </td>
+                    <td>{(order.order_status || 'pending').toUpperCase()}</td>
+                    <td>
+                      {new Date(order.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </td>
+                    <td>
+                      {order.items?.map((item) => `${item.products_name} (x${item.products_quantity})`).join(', ') || 'N/A'}
+                    </td>
+                    <td style={{ textAlign: 'right' }}>{order.total_quantity}</td>
+                    <td style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                      ${parseFloat(order.total_price || 0).toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="printFooter">
+              <span>Official Order Ledger Record • Total Filtered Orders: {filteredOrders.length}</span>
+              <span>Confidential - Internal Enterprise Distribution</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* -------------------------------------------------------------------
+          SCREEN UI DASHBOARD
+         ------------------------------------------------------------------- */}
       <header className="page-header">
         <div className="title-area">
           <h1>Order Management Dashboard</h1>
-          <p className="subtitle">Audit, update, and manage historical orders</p>
+          <p className="subtitle">Audit, process order statuses, and track revenue flow</p>
         </div>
 
-        <div className="calendar-bar">
+        <div className="filter-controls">
+          <div className="select-field">
+            <select 
+              value={selectedStatus} 
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="status-filter-select"
+            >
+              <option value="">All Statuses</option>
+              <option value="pending">⏳ Pending</option>
+              <option value="confirm">✅ Confirmed</option>
+              <option value="cancel">❌ Canceled</option>
+            </select>
+          </div>
+
           <div className="calendar-field">
             <span className="cal-icon">📅</span>
             <input
@@ -211,29 +427,29 @@ const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
           </div>
           {selectedDate && (
             <button className="btn-clear-date" onClick={() => setSelectedDate('')}>
-              Clear Filter
+              Clear Date
             </button>
           )}
         </div>
       </header>
 
-      {/* Analytics Metric Bar */}
+      {/* Metric Cards */}
       <div className="stats-bar">
         <div className="stat-card">
-          <span className="stat-label">Orders Found</span>
+          <span className="stat-label">Total Orders</span>
           <span className="stat-value">{aggregatedStats.count}</span>
         </div>
         <div className="stat-card">
-          <span className="stat-label">Total Revenue</span>
+          <span className="stat-label">Confirmed Revenue</span>
           <span className="stat-value text-accent">${aggregatedStats.revenue.toFixed(2)}</span>
         </div>
         <div className="stat-card">
-          <span className="stat-label">Total Items Sold</span>
-          <span className="stat-value">{aggregatedStats.totalQty}</span>
+          <span className="stat-label">Pending Approval</span>
+          <span className="stat-value text-warning">{aggregatedStats.pendingCount}</span>
         </div>
         <div className="stat-card">
-          <span className="stat-label">Total Discount Given</span>
-          <span className="stat-value text-danger">-${aggregatedStats.totalDiscount.toFixed(2)}</span>
+          <span className="stat-label">Items Sold</span>
+          <span className="stat-value">{aggregatedStats.totalQty}</span>
         </div>
       </div>
 
@@ -243,7 +459,7 @@ const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
         </div>
       )}
 
-      {/* Main Table Controls & Content */}
+      {/* Main Table */}
       <div className="table-card">
         <div className="table-toolbar">
           <div className="search-box">
@@ -255,19 +471,24 @@ const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <button className="btn-refresh" onClick={fetchOrders} title="Refresh Order History">
-            🔄 Refresh List
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button className="btn-print" onClick={handlePrintAll} title="Print Bulk Report">
+              🖨️ Print All PDF
+            </button>
+            <button className="btn-refresh" onClick={fetchOrders} title="Refresh Order History">
+              🔄 Refresh List
+            </button>
+          </div>
         </div>
 
         {loading ? (
           <div className="loading-state">
             <div className="spinner"></div>
-            <p>Fetching order data from database...</p>
+            <p>Fetching orders...</p>
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="empty-state">
-            <p>No orders found matching your selected date or search filter.</p>
+            <p>No orders found matching your active filters.</p>
           </div>
         ) : (
           <div className="table-responsive">
@@ -275,66 +496,87 @@ const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
               <thead>
                 <tr>
                   <th>Order Details</th>
-                  <th>Date & Created</th>
+                  <th>Order Status</th>
+                  <th>Date</th>
                   <th className="text-right">Quantity</th>
-                  <th className="text-right">Total Discount</th>
                   <th className="text-right">Total Price</th>
-                  <th>Last Updated</th>
                   <th className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredOrders.map((order) => (
-                  <tr key={order.id}>
-                    <td>
-                      <strong className="order-no">{order.order_number || `ORD-#${order.id}`}</strong>
-                      <span className="order-id-sub">System ID: #{order.id}</span>
-                    </td>
-                    <td>
-                      {new Date(order.created_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </td>
-                    <td className="text-right">{order.total_quantity}</td>
-                    <td className="text-right text-danger">
-                      -${parseFloat(order.total_discount || 0).toFixed(2)}
-                    </td>
-                    <td className="text-right font-bold text-accent">
-                      ${parseFloat(order.total_price || 0).toFixed(2)}
-                    </td>
-                    <td>
-                      {new Date(order.updated_at).toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </td>
-                    <td className="text-right action-cells">
-                      <button
-                        className="btn-action btn-view"
-                        onClick={() => setViewingOrder(order)}
-                        title="View Items"
-                      >
-                        👁️
-                      </button>
-                      <button
-                        className="btn-action btn-edit"
-                        onClick={() => setEditingOrder(JSON.parse(JSON.stringify(order)))}
-                        title="Edit Order"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        className="btn-action btn-delete"
-                        onClick={() => handleDeleteOrder(order.id)}
-                        title="Delete Order"
-                      >
-                        🗑️
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {filteredOrders.map((order) => {
+                  const currentStatus = order.order_status || 'pending';
+                  const isUpdatingThis = updatingStatusId === order.id;
+
+                  return (
+                    <tr key={order.id}>
+                      <td>
+                        <strong className="order-no">{order.order_number || `ORD-#${order.id}`}</strong>
+                        <span className="order-id-sub">System ID: #{order.id}</span>
+                      </td>
+
+                      <td>
+                        <div className="status-selector-wrapper">
+                          <select
+                            disabled={isUpdatingThis}
+                            value={currentStatus}
+                            onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                            className={getStatusBadgeClass(currentStatus)}
+                          >
+                            <option value="pending">⏳ Pending</option>
+                            <option value="confirm">✅ Confirm</option>
+                            <option value="cancel">❌ Cancel</option>
+                          </select>
+                          {isUpdatingThis && <span className="mini-loader">...</span>}
+                        </div>
+                      </td>
+
+                      <td>
+                        {new Date(order.created_at).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </td>
+                      <td className="text-right">{order.total_quantity}</td>
+                      <td className="text-right font-bold text-accent">
+                        ${parseFloat(order.total_price || 0).toFixed(2)}
+                      </td>
+                      
+                      {/* Action Cell with dedicated individual print button */}
+                      <td className="text-right action-cells">
+                        <button
+                          className="btn-action btn-print-single"
+                          onClick={() => handlePrintSingleOrder(order)}
+                          title="Print Receipt Invoice"
+                        >
+                          🖨️
+                        </button>
+                        <button
+                          className="btn-action btn-view"
+                          onClick={() => setViewingOrder(order)}
+                          title="View Details"
+                        >
+                          👁️
+                        </button>
+                        <button
+                          className="btn-action btn-edit"
+                          onClick={() => setEditingOrder(JSON.parse(JSON.stringify(order)))}
+                          title="Edit Order"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          className="btn-action btn-delete"
+                          onClick={() => handleDeleteOrder(order.id)}
+                          title="Delete Order"
+                        >
+                          🗑️
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -350,6 +592,9 @@ const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
                 <h2>Order Details</h2>
                 <p className="order-no">{viewingOrder.order_number}</p>
               </div>
+              <span className={getStatusBadgeClass(viewingOrder.order_status || 'pending')}>
+                {(viewingOrder.order_status || 'pending').toUpperCase()}
+              </span>
               <button className="close-btn" onClick={() => setViewingOrder(null)}>✕</button>
             </header>
 
@@ -389,6 +634,9 @@ const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
               <button className="btn-secondary" onClick={() => setViewingOrder(null)}>
                 Close
               </button>
+              <button className="btn-primary" onClick={() => handlePrintSingleOrder(viewingOrder)}>
+                🖨️ Print Invoice
+              </button>
             </footer>
           </div>
         </div>
@@ -407,6 +655,19 @@ const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             </header>
 
             <div className="modal-content">
+              <div className="modal-status-field">
+                <label>Order Status:</label>
+                <select
+                  value={editingOrder.order_status || 'pending'}
+                  onChange={(e) => setEditingOrder({ ...editingOrder, order_status: e.target.value })}
+                  className={getStatusBadgeClass(editingOrder.order_status || 'pending')}
+                >
+                  <option value="pending">Pending</option>
+                  <option value="confirm">Confirm</option>
+                  <option value="cancel">Cancel</option>
+                </select>
+              </div>
+
               <div className="edit-items-list">
                 {editingOrder.items?.map((item, idx) => (
                   <div key={idx} className="edit-item-row">
@@ -422,44 +683,33 @@ const SERVER_BASE_URL = import.meta.env.VITE_API_BASE_URL;
                           type="number"
                           step="0.01"
                           value={item.products_price}
-                          onChange={(e) =>
-                            handleEditItemChange(idx, 'products_price', e.target.value)
-                          }
+                          onChange={(e) => handleEditItemChange(idx, 'products_price', e.target.value)}
                         />
                       </div>
-
                       <div>
                         <label>Discount ($)</label>
                         <input
                           type="number"
                           step="0.01"
                           value={item.products_discount}
-                          onChange={(e) =>
-                            handleEditItemChange(idx, 'products_discount', e.target.value)
-                          }
+                          onChange={(e) => handleEditItemChange(idx, 'products_discount', e.target.value)}
                         />
                       </div>
-
                       <div>
                         <label>Quantity</label>
                         <input
                           type="number"
                           min="1"
                           value={item.products_quantity}
-                          onChange={(e) =>
-                            handleEditItemChange(idx, 'products_quantity', e.target.value)
-                          }
+                          onChange={(e) => handleEditItemChange(idx, 'products_quantity', e.target.value)}
                         />
                       </div>
-
                       <div>
                         <label>Sell By</label>
                         <input
                           type="text"
                           value={item.sell_by}
-                          onChange={(e) =>
-                            handleEditItemChange(idx, 'sell_by', e.target.value)
-                          }
+                          onChange={(e) => handleEditItemChange(idx, 'sell_by', e.target.value)}
                         />
                       </div>
                     </div>
