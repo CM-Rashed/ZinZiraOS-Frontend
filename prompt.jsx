@@ -325,7 +325,10 @@ export default function ManageStaff() {
     try {
       const res = await fetch(`${STAFF_OTP_BASE_URL}/request-otp`, {
         method: "POST",
-        headers: getAuthHeaders(),
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
@@ -351,44 +354,42 @@ export default function ManageStaff() {
   };
 
   // Step 2: Complete OTP Verification
-const handleVerifyOtp = async (e) => {
-  e.preventDefault();
-  setSubmitting(true);
-  setErrorMsg("");
-  setSuccessMsg("");
+ const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setErrorMsg("");
+    setSuccessMsg("");
 
-  const data = new FormData();
-  data.append("email", formData.email);
-  data.append("otp", otpCode);
+    const data = new FormData();
+    data.append("email", formData.email);
+    data.append("otp", otpCode);
 
-  // Append image file object if attached
-  if (formData.image instanceof File) {
-    data.append("image", formData.image);
-  }
+    if (formData.image) {
+      data.append("image", formData.image);
+    }
 
-  try {
-    const res = await fetch(`${STAFF_OTP_BASE_URL}/complete-registration`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        // Do NOT set 'Content-Type': 'multipart/form-data' manually
-        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-      },
-      body: data,
-    });
+    try {
+      const res = await fetch(`${STAFF_OTP_BASE_URL}/complete-registration`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          // Note: Do NOT manually set Content-Type header when sending FormData
+        },
+        body: data,
+      });
 
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.message || "Invalid or expired OTP code.");
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.message || "Invalid or expired OTP code.");
 
-    alert("Staff registered successfully!");
-    fetchStaff();
-    handleCloseFormModal();
-  } catch (err) {
-    setErrorMsg(err.message);
-  } finally {
-    setSubmitting(false);
-  }
-};
+      alert("Staff registered successfully!");
+      fetchStaff();
+      handleCloseFormModal();
+    } catch (err) {
+      setErrorMsg(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleDelete = async (e, id) => {
     e.stopPropagation();
